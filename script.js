@@ -206,7 +206,7 @@
   const gift = $('#gift');
   gift.addEventListener('click', () => {
     const first = !gift.classList.contains('open');
-    gift.classList.add('open'); gift.setAttribute('aria-expanded', 'true');
+    gift.classList.add('open'); $('#giftHint').classList.add('gone'); gift.setAttribute('aria-expanded', 'true');
     const r = gift.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * .35;
     burst(cx, cy, first ? 90 : 40); emojiBurst(cx, cy, first ? 22 : 10);
     $('#giftMsg').classList.add('show');
@@ -216,7 +216,7 @@
   const cake = $('#cake'), wish = $('#wish'), wishMsg = $('#wishMsg');
   let blown = false;
   wish.addEventListener('click', () => {
-    blown = !blown;
+    blown = !blown; $('#wishHint').classList.add('gone');
     cake.classList.toggle('out', blown);
     if (blown) {
       const r = cake.getBoundingClientRect();
