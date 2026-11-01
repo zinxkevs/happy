@@ -84,10 +84,35 @@
   <footer class="block center reveal final">
     <p class="big2">Once again, Happy Birthday, Happy! 💗</p>
     <p class="sub">Enjoy your day. You only turn 20 once!</p>
-    <p class="sign">We wishes you a wonderful birthday.
-    - Kibin</p>
+    <p class="sign">We wishes you a wonderful birthday.</p>
   </footer>
+
+  <!-- 3. FINAL SURPRISE: SOUNDTRACK -->
+  <section id="music" class="block center reveal">
+    <h3 class="kicker">Your birthday soundtrack</h3>
+    <div id="player" class="player" aria-label="Music player">
+      <audio id="audio" preload="metadata" src="assets/aphrodite.mp3"></audio>
+      <div id="vinyl" class="vinyl" aria-hidden="true"><span></span></div>
+      <div class="p-body">
+        <div class="meta"><strong id="trackTitle">Aphrodite</strong><span id="trackArtist">The Ridleys</span></div>
+        <div class="p-row">
+          <button id="playBtn" class="play" type="button" aria-label="Play">
+            <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.500v13a1 1 0 0 0 1.500.9l10.500-6.500a1 1 0 0 0 0-1.700L9.500 4.600A1 1 0 0 0 8 5.500z" fill="currentColor"/></svg>
+            <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4.500" height="14" rx="1.500" fill="currentColor"/><rect x="13.500" y="5" width="4.500" height="14" rx="1.500" fill="currentColor"/></svg>
+          </button>
+          <div class="timeline">
+            <input id="seek" type="range" min="0" max="100" step="0.1" value="0" aria-label="Seek">
+            <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
+          </div>
+        </div>
+        <label class="vol"><span aria-hidden="true">🔈</span><input id="vol" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volume"></label>
+      </div>
+      <p id="musicNote" class="music-note" role="status" hidden>Your birthday soundtrack is waiting for its music. 💗</p>
+    </div>
+  </section>
 </main>
+
+<a id="musicInvite" class="invite" href="#music" hidden>There's a little soundtrack waiting for you. 🎧</a>
 
 <script src="script.js"></script>
 </body>

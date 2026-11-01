@@ -189,6 +189,7 @@
       setInterval(spawnHeart, 1100);
       setInterval(() => { if (!document.hidden) rain(reduced ? 1 : 3); }, 900);
       initReveal();
+      showMusicInvite();
     }, 750);
   });
 
@@ -226,6 +227,74 @@
       wishMsg.classList.remove('show'); wish.textContent = 'Make a Wish ✨';
     }
   });
+
+  /* ================= Music player ================= */
+  const audio = $('#audio'), player = $('#player'), playBtn = $('#playBtn'), seek = $('#seek'), vol = $('#vol');
+  const tCur = $('#tCur'), tDur = $('#tDur'), note = $('#musicNote'), invite = $('#musicInvite');
+  let dragging = false;
+
+  const fmt = (t) => (isFinite(t) && t > 0) ? Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') : '0:00';
+  const fill = (el, pct) => el.style.setProperty('--p', pct + '%');
+
+  function showMusicInvite() {
+    setTimeout(() => {
+      if (!player.classList.contains('playing')) invite.hidden = false;
+      requestAnimationFrame(() => invite.classList.add('show'));
+      setTimeout(hideInvite, 8000);
+    }, 3000);
+  }
+  function hideInvite() { invite.classList.remove('show'); setTimeout(() => (invite.hidden = true), 700); }
+  invite.addEventListener('click', () => setTimeout(hideInvite, 600));
+
+  function setPlaying(on) {
+    player.classList.toggle('playing', on);
+    playBtn.setAttribute('aria-label', on ? 'Pause' : 'Play');
+    if (on && !invite.hidden) hideInvite();
+  }
+
+  function fail(msg) {
+    player.classList.add('missing'); setPlaying(false);
+    if (msg) note.textContent = msg;
+    note.hidden = false;
+  }
+
+  function sync() {
+    const d = audio.duration, c = audio.currentTime;
+    if (!dragging) { const pct = isFinite(d) && d > 0 ? (c / d) * 100 : 0; seek.value = pct; fill(seek, pct); }
+    tCur.textContent = fmt(dragging ? (seek.value / 100) * d : c);
+    tDur.textContent = fmt(d);
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) {
+      const p = audio.play();
+      if (p && p.catch) p.catch(() => { if (audio.error) fail(); else note.hidden = true; setPlaying(false); });
+    } else audio.pause();
+  });
+  audio.addEventListener('play', () => setPlaying(true));
+  audio.addEventListener('pause', () => setPlaying(false));
+  audio.addEventListener('ended', () => { setPlaying(false); audio.currentTime = 0; sync(); });
+  audio.addEventListener('timeupdate', sync);
+  audio.addEventListener('loadedmetadata', sync);
+  audio.addEventListener('durationchange', sync);
+  audio.addEventListener('error', () => fail());
+
+  seek.addEventListener('pointerdown', () => { dragging = true; });
+  seek.addEventListener('input', () => {
+    fill(seek, seek.value);
+    if (isFinite(audio.duration)) { dragging = true; tCur.textContent = fmt((seek.value / 100) * audio.duration); }
+  });
+  seek.addEventListener('change', () => {
+    if (isFinite(audio.duration)) audio.currentTime = (seek.value / 100) * audio.duration;
+    dragging = false; sync();
+  });
+  addEventListener('pointerup', () => setTimeout(() => { if (dragging) { dragging = false; sync(); } }, 60));
+
+  vol.addEventListener('input', () => { audio.volume = +vol.value; fill(vol, vol.value * 100); });
+  audio.volume = +vol.value;
+
+  if (audio.error || audio.networkState === 3) fail();   // file already known to be missing
+  setTimeout(() => { if (audio.error || audio.networkState === 3) fail(); }, 600);
 
   resize();
 })();
