@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fde4ec">
+<title>Hey, Happy! 🎀</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i></div>
+<div id="floaters" aria-hidden="true"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<!-- 1. THE QUESTION -->
+<section id="intro" class="screen">
+  <div class="ribbon-mark rise" style="--i:0" aria-hidden="true">🎀</div>
+  <h1 class="rise" style="--i:1">Hey, Happy! 🎀</h1>
+  <p class="sub rise" style="--i:2">Someone has a little surprise for you...</p>
+  <div class="ask rise" style="--i:3">
+    <h2>Today is your birthday?</h2>
+    <div class="btns">
+      <button id="yes" class="btn btn-yes" type="button">YES! 💗</button>
+      <span id="noSlot" class="no-slot"><button id="no" class="btn btn-no" type="button">NO 🙈</button></span>
+    </div>
+    <p id="hint" class="hint" aria-live="polite">&nbsp;</p>
+  </div>
+</section>
+
+<!-- 2. THE CELEBRATION -->
+<main id="party" hidden>
+  <header class="screen hero">
+    <p class="eyebrow rise" style="--i:0">a little something, just for you</p>
+    <h1 class="big rise" style="--i:1">Happy Birthday, Happy! 🎂</h1>
+    <p class="name rise" style="--i:2">Happy Mae Carpio</p>
+    <p class="sub rise" style="--i:3">Today is all about you. You deserve all the happiness in the world.</p>
+    <a class="cue rise" style="--i:4" href="#message" aria-label="Scroll down"><span></span></a>
+  </header>
+
+  <section id="message" class="block">
+    <article class="card reveal">
+      <h2>Happy 20th Birthday, Happy! 💗</h2>
+      <p style="--i:1">I hope this new chapter of your life brings you more happiness, beautiful memories, and countless reasons to smile.</p>
+      <p style="--i:2">Don't be too sad about turning 20. You're not getting old, you're just entering another chapter filled with new experiences and opportunities.</p>
+      <p style="--i:3">Enjoy your special day, take care always, and never forget that you deserve all the good things life has to offer.</p>
+      <p style="--i:4">Keep smiling and keep being you. Have the happiest birthday! 🎀</p>
+    </article>
+  </section>
+
+  <section class="block center reveal">
+    <h3 class="kicker">Open your surprise</h3>
+    <button id="gift" class="gift" type="button" aria-label="Open your surprise" aria-expanded="false">
+      <span class="box"></span>
+      <span class="lid"><i class="bow"></i></span>
+    </button>
+    <p id="giftMsg" class="pop" aria-live="polite">Surprise! You deserve something beautiful today. 💝</p>
+  </section>
+
+  <section class="block center reveal">
+    <h3 class="kicker">Make a wish</h3>
+    <svg id="cake" viewBox="0 0 240 250" role="img" aria-label="Birthday cake with three candles">
+      <ellipse cx="120" cy="228" rx="106" ry="12" fill="#e6cfa8"/>
+      <ellipse cx="120" cy="223" rx="100" ry="10" fill="#fff8f3"/>
+      <rect x="30" y="150" width="180" height="70" rx="14" fill="#f2a0bd"/>
+      <g fill="#fff8f3"><circle cx="42" cy="156" r="11"/><circle cx="64" cy="160" r="11"/><circle cx="86" cy="156" r="11"/><circle cx="108" cy="160" r="11"/><circle cx="130" cy="156" r="11"/><circle cx="152" cy="160" r="11"/><circle cx="174" cy="156" r="11"/><circle cx="196" cy="160" r="11"/></g>
+      <g fill="#ff4d8d"><rect x="52" y="188" width="10" height="4" rx="2" transform="rotate(-20 57 190)"/><rect x="112" y="196" width="10" height="4" rx="2" transform="rotate(25 117 198)"/><rect x="170" y="186" width="10" height="4" rx="2" transform="rotate(-35 175 188)"/><rect x="82" y="205" width="10" height="4" rx="2" transform="rotate(15 87 207)"/><rect x="146" y="208" width="10" height="4" rx="2" transform="rotate(-10 151 210)"/></g>
+      <rect x="62" y="100" width="116" height="54" rx="12" fill="#ffd3e2"/>
+      <g fill="#fff8f3"><circle cx="74" cy="106" r="9"/><circle cx="94" cy="109" r="9"/><circle cx="114" cy="106" r="9"/><circle cx="134" cy="109" r="9"/><circle cx="154" cy="106" r="9"/><circle cx="170" cy="108" r="8"/></g>
+      <g fill="#fff"><rect x="87" y="66" width="9" height="36" rx="3"/><rect x="116" y="66" width="9" height="36" rx="3"/><rect x="145" y="66" width="9" height="36" rx="3"/></g>
+      <g fill="#ff8fb5"><rect x="87" y="76" width="9" height="5"/><rect x="116" y="84" width="9" height="5"/><rect x="145" y="76" width="9" height="5"/></g>
+      <g class="flames">
+        <path class="flame" style="--d:0s" d="M91.500 46c5 6 6 12 0 17-6-5-5-11 0-17z" fill="#ffc94d"/>
+        <path class="flame" style="--d:.3s" d="M120.500 46c5 6 6 12 0 17-6-5-5-11 0-17z" fill="#ffc94d"/>
+        <path class="flame" style="--d:.6s" d="M149.500 46c5 6 6 12 0 17-6-5-5-11 0-17z" fill="#ffc94d"/>
+      </g>
+      <g class="smoke" fill="#e9d5b5"><circle cx="91" cy="58" r="3"/><circle cx="120" cy="58" r="3"/><circle cx="149" cy="58" r="3"/></g>
+    </svg>
+    <button id="wish" class="btn btn-yes" type="button">Make a Wish ✨</button>
+    <p id="wishMsg" class="pop" aria-live="polite">May all your wishes come true!</p>
+  </section>
+
+  <footer class="block center reveal final">
+    <p class="big2">Once again, Happy Birthday, Happy! 💗</p>
+    <p class="sub">Enjoy your day. You only turn 20 once!</p>
+    <p class="sign">— Someone who wishes you a wonderful birthday.</p>
+  </footer>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
