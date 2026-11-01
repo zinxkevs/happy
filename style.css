@@ -290,3 +290,8 @@ body.celebrating .side-glow{opacity:1;animation:sidePulse 3.2s ease-in-out infin
 .sballoon.leaving{opacity:0!important;transition:opacity .6s ease}
 @keyframes sPop{0%{transform:translateY(30px) scale(.3);opacity:0}8%{opacity:.95;transform:translateY(-4vh) scale(1.1)}14%{transform:translateY(-10vh) scale(1)}
   92%{opacity:.95}100%{transform:translateY(-118vh) translateX(var(--sw)) rotate(6deg);opacity:0}}
+
+/* Center logo picture on the vinyl (square image shown as a circle) */
+.vinyl-logo{position:absolute;left:50%;top:50%;width:48%;aspect-ratio:1;transform:translate(-50%,-50%);
+  border-radius:50%;object-fit:cover;z-index:2;border:2px solid #fff;box-shadow:0 0 0 2px rgba(255,255,255,.35);
+  -webkit-user-drag:none;user-select:none}
