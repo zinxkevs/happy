@@ -94,7 +94,7 @@
       <audio id="audio" preload="metadata" src="assets/aphrodite.mp3"></audio>
       <div id="vinyl" class="vinyl" aria-hidden="true"><span></span></div>
       <div class="p-body">
-        <div class="meta"><strong id="trackTitle">Aphrodite</strong><span id="trackArtist">The Ridleys</span></div>
+        <div class="meta"><strong id="trackTitle">Aphrodite</strong><span id="trackArtist">Redd</span></div>
         <div class="p-row">
           <button id="playBtn" class="play" type="button" aria-label="Play">
             <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.500v13a1 1 0 0 0 1.500.9l10.500-6.500a1 1 0 0 0 0-1.700L9.500 4.600A1 1 0 0 0 8 5.500z" fill="currentColor"/></svg>
@@ -108,6 +108,26 @@
         <label class="vol"><span aria-hidden="true">🔈</span><input id="vol" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volume"></label>
       </div>
       <p id="musicNote" class="music-note" role="status" hidden>Your birthday soundtrack is waiting for its music. 💗</p>
+    </div>
+  </section>
+
+  <!-- 4. 3D PHOTO CAROUSEL (turns while the music plays) -->
+  <section id="memories" class="block center reveal">
+    <h3 class="kicker">A Few Moments of You ♡</h3>
+    <p class="sub gal-sub">More memories to come Happy.</p>
+    <div id="gallery" class="gallery" role="group" aria-label="Photo gallery">
+      <div class="stage" aria-hidden="true"></div>
+      <div id="ring" class="ring">
+        <div class="card3d" style="--i:0"><div class="photo"><img src="assets/photos/photo1.jpg" alt="Memory 1" draggable="false"></div></div>
+        <div class="card3d" style="--i:1"><div class="photo"><img src="assets/photos/photo2.jpg" alt="Memory 2" draggable="false"></div></div>
+        <div class="card3d" style="--i:2"><div class="photo"><img src="assets/photos/photo3.jpg" alt="Memory 3" draggable="false"></div></div>
+        <div class="card3d" style="--i:3"><div class="photo"><img src="assets/photos/photo4.jpg" alt="Memory 4" draggable="false"></div></div>
+        <div class="card3d" style="--i:4"><div class="photo"><img src="assets/photos/photo5.jpg" alt="Memory 5" draggable="false"></div></div>
+      </div>
+    </div>
+    <div class="gal-nav">
+      <button id="galPrev" type="button" aria-label="Previous photo">‹</button>
+      <button id="galNext" type="button" aria-label="Next photo">›</button>
     </div>
   </section>
 </main>

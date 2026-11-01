@@ -296,5 +296,99 @@
   if (audio.error || audio.networkState === 3) fail();   // file already known to be missing
   setTimeout(() => { if (audio.error || audio.networkState === 3) fail(); }, 600);
 
+  /* ================= 3D photo carousel (driven by the audio element) ================= */
+  const ring = $('#ring'), faces = [...ring.querySelectorAll('.photo')];
+  const STEP = 72, SPEED = 360 / 54;            // one full turn in ~54 seconds
+  let angle = 0, spinning = false, snapping = false, lastT = 0, gRaf = 0;
+
+  function paintRing() {
+    ring.style.transform = `translateZ(calc(var(--r) * -1)) rotateY(${-angle}deg)`;
+    faces.forEach((f, i) => {
+      const facing = Math.max(0, Math.cos(((i * STEP - angle) * Math.PI) / 180));
+      f.style.transform = `scale(${(1 + .1 * facing * facing).toFixed(3)})`;      // front photo is a touch larger
+      f.style.opacity = (.55 + .45 * Math.pow(facing, .6)).toFixed(3);            // and the most visible
+    });
+  }
+  function galTick(t) {
+    if (!spinning) { gRaf = 0; return; }
+    const dt = Math.min(.1, (t - lastT) / 1000); lastT = t;
+    if (!snapping) { angle += SPEED * dt; paintRing(); }
+    gRaf = requestAnimationFrame(galTick);
+  }
+  function spin(on) {
+    spinning = on && !reduced;                  // reduced motion: gallery stays still (use the arrows)
+    $('#gallery').classList.toggle('live', spinning);   // stage lights glow & turn with the music
+    if (spinning && !gRaf) { lastT = performance.now(); gRaf = requestAnimationFrame(galTick); }
+  }
+  function stepRing(dir) {
+    snapping = true; ring.classList.add('snap');
+    angle = (Math.round(angle / STEP) + dir) * STEP; paintRing();
+    setTimeout(() => { ring.classList.remove('snap'); snapping = false; lastT = performance.now(); }, 820);
+  }
+  audio.addEventListener('play', () => spin(true));
+  audio.addEventListener('pause', () => spin(false));
+  audio.addEventListener('ended', () => spin(false));
+  $('#galPrev').addEventListener('click', () => stepRing(-1));
+  $('#galNext').addEventListener('click', () => stepRing(1));
+  faces.forEach((f) => {                         // graceful placeholder for missing photos
+    const img = f.querySelector('img'), miss = () => f.classList.add('missing');
+    img.addEventListener('error', miss);
+    if (img.complete && !img.naturalWidth) miss();
+  });
+  if (!reduced) {                                // soft lights rising off the stage while the music plays
+    const gal = $('#gallery');
+    for (let i = 0; i < 9; i++) {
+      const m = document.createElement('i');
+      m.className = 'mote';
+      m.style.cssText = `--x:${rnd(14, 86)}%;--s:${rnd(3, 6).toFixed(1)}px;--d:${rnd(5, 8).toFixed(1)}s;--dl:${-rnd(0, 7).toFixed(1)}s;--dx:${rnd(-24, 24).toFixed(0)}px`;
+      gal.appendChild(m);
+    }
+  }
+  paintRing();
+
+  /* ================= Side celebration while the music plays ================= */
+  ['l', 'r'].forEach((s) => {
+    const g = document.createElement('div');
+    g.className = 'side-glow ' + s; g.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(g);
+  });
+  const SIDE_COLS = ['#f9b8cf', '#ff8fb5', '#e8799f', '#ff6fa3', '#fde4ec', '#e6cfa8'];
+  let sideTimer = 0, sideFlip = 0;
+
+  function sideBurst(side, n) {                  // confetti cannon firing in from the screen edge
+    const left = side === 'l';
+    for (let i = 0; i < n; i++) {
+      parts.push(make(left ? 2 : W - 2, H * rnd(.5, .95), (left ? 1 : -1) * rnd(4, 10), rnd(-16, -7), .22, rnd(90, 150)));
+    }
+    run();
+  }
+  function sideBalloon(side) {                   // a balloon pops up along the edge and floats away
+    const b = document.createElement('i');
+    b.className = 'sballoon ' + side;
+    b.style.cssText = `--sz:${(W < 600 ? rnd(30, 42) : rnd(40, 62)).toFixed(0)}px;--c:${pick(SIDE_COLS)};--e:${rnd(0, W < 600 ? 20 : 70).toFixed(0)}px;--d:${rnd(6, 9).toFixed(1)}s;--sw:${rnd(8, 18).toFixed(0)}px`;
+    b.addEventListener('animationend', () => b.remove());
+    document.body.appendChild(b);
+  }
+  function sideTick() {
+    if (document.hidden || parts.length > 300) return;
+    const side = (sideFlip ^= 1) ? 'l' : 'r';
+    sideBurst(side, 16);
+    if (Math.random() < .65) sideBalloon(side);
+  }
+  function sideCelebrate(on) {
+    document.body.classList.toggle('celebrating', on);
+    if (reduced) return;                         // reduced motion: soft glow only
+    clearInterval(sideTimer); sideTimer = 0;
+    if (on) {
+      sideBurst('l', 34); sideBurst('r', 34); sideBalloon('l'); sideBalloon('r');
+      sideTimer = setInterval(sideTick, 1000);
+    } else {
+      document.querySelectorAll('.sballoon').forEach((b) => { b.classList.add('leaving'); setTimeout(() => b.remove(), 700); });
+    }
+  }
+  audio.addEventListener('play', () => sideCelebrate(true));
+  audio.addEventListener('pause', () => sideCelebrate(false));
+  audio.addEventListener('ended', () => sideCelebrate(false));
+
   resize();
 })();
