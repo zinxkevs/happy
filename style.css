@@ -110,6 +110,12 @@ section.reveal.in,footer.reveal.in{opacity:1;transform:none}
 .pop.show{opacity:1;transform:none}
 .pop:not(.show){visibility:hidden}
 
+/* ---------- Click-me arrows ---------- */
+.clickme{display:flex;flex-direction:column;align-items:center;margin-bottom:8px;font-family:var(--script);font-size:clamp(1.6rem,6vw,2.1rem);color:var(--hot);line-height:1.1;animation:nudge 1.1s ease-in-out infinite;transition:opacity .4s}
+.clickme b{font-family:var(--sans);font-weight:700;font-size:1.8rem;line-height:1}
+.clickme.gone{opacity:0;pointer-events:none;position:absolute;visibility:hidden}
+@keyframes nudge{50%{transform:translateY(9px)}}
+
 /* ---------- Cake ---------- */
 #cake{width:min(78vw,300px);height:auto;overflow:visible;filter:drop-shadow(0 20px 18px rgba(232,121,159,.25));margin-bottom:22px}
 .flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker .5s ease-in-out infinite alternate;animation-delay:var(--d);transition:opacity .3s,transform .3s}
