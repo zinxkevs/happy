@@ -4,8 +4,12 @@
   const $ = (s) => document.querySelector(s);
   const rnd = (a, b) => a + Math.random() * (b - a);
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const smooth = (x) => x * x * (3 - 2 * x);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const COLORS = ['#ff4d8d', '#f9b8cf', '#e8799f', '#ffffff', '#e6cfa8', '#fde4ec', '#d9d9e0'];
+  const DULL = ['#8a7352', '#6b4a3a', '#5a1f22', '#a89677', '#4a3a2a'];   // confetti once the garden has faded
+  let wp = 0;                                    // decay progress 0..1 (written by the scroll controller below)
 
   /* ================= Confetti engine (canvas) ================= */
   const cv = $('#fx'), ctx = cv.getContext('2d');
@@ -20,7 +24,7 @@
 
   function make(x, y, vx, vy, g, life) {
     return { x, y, vx, vy, g, life, max: life, w: rnd(6, 11), h: rnd(4, 7), rot: rnd(0, 6.28), vr: rnd(-.2, .2),
-      t: rnd(0, 6), sw: rnd(.2, .9), c: pick(COLORS), s: pick([0, 0, 1, 2, 2]) };
+      t: rnd(0, 6), sw: rnd(.2, .9), c: pick(wp > .28 ? DULL : COLORS), s: pick([0, 0, 1, 2, 2]) };
   }
 
   function burst(x, y, n = 80) {
@@ -63,12 +67,13 @@
     if (!raf) ctx.clearRect(0, 0, W, H);
   }
 
-  /* ================= Emoji burst (hearts + sparkles) ================= */
+  /* ================= Emoji burst (hearts + sparkles; wilted flowers once the garden fades) ================= */
   function emojiBurst(x, y, n = 18) {
     n = reduced ? 6 : n;
+    const set = wp > .28 ? ['🥀', '🍂', '🥀'] : ['💗', '✨', '💖', '💝', '🎀'];
     for (let i = 0; i < n; i++) {
       const el = document.createElement('span');
-      el.textContent = pick(['💗', '✨', '💖', '💝', '🎀']);
+      el.textContent = pick(set);
       Object.assign(el.style, { position: 'fixed', left: x + 'px', top: y + 'px', zIndex: 55, pointerEvents: 'none', fontSize: rnd(18, 34) + 'px' });
       document.body.appendChild(el);
       const a = rnd(0, 6.28), d = rnd(70, Math.min(220, W * .4));
@@ -85,7 +90,7 @@
   const floaters = $('#floaters');
 
   function spawnHeart() {
-    if (document.hidden || floaters.querySelectorAll('.heart').length > 14) return;
+    if (document.hidden || wp > .3 || floaters.querySelectorAll('.heart').length > 14) return;
     const h = document.createElement('span');
     h.className = 'heart'; h.textContent = '♥';
     h.style.cssText = `left:${rnd(2, 96)}%;--sz:${rnd(14, 30)}px;--d:${rnd(9, 15)}s;--dx:${rnd(-60, 60)}px;--r:${rnd(-40, 40)}deg;--c:${pick(['#f9b8cf', '#ff8fb5', '#e8799f', '#ffc2d6'])}`;
@@ -187,14 +192,30 @@
       addBalloons(); addSparkles();
       for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 250);
       setInterval(spawnHeart, 1100);
-      setInterval(() => { if (!document.hidden) rain(reduced ? 1 : 3); }, 900);
+      setInterval(() => { if (!document.hidden && wp < .25) rain(reduced ? 1 : 3); }, 900);
       initReveal();
-      showMusicInvite();
+      requestAnimationFrame(() => { measure(); buildScatter(); queueWither(); });
     }, 750);
   });
 
-  /* ================= Scroll reveals ================= */
+  /* ================= Scroll reveals (+ cinematic word reveal for the letters) ================= */
+  function splitWords() {
+    document.querySelectorAll('.note p').forEach((p) => {
+      if (p.dataset.split) return;
+      p.dataset.split = '1';
+      const words = p.textContent.trim().split(/\s+/);
+      p.textContent = '';
+      words.forEach((w, i) => {
+        const s = document.createElement('span');
+        s.className = 'w'; s.style.setProperty('--k', i); s.textContent = w;
+        p.appendChild(s);
+        if (i < words.length - 1) p.appendChild(document.createTextNode(' '));
+      });
+    });
+  }
+
   function initReveal() {
+    splitWords();
     const els = document.querySelectorAll('.reveal');
     if (!('IntersectionObserver' in window)) { els.forEach((e) => e.classList.add('in')); return; }
     const io = new IntersectionObserver((entries) => {
@@ -204,21 +225,30 @@
   }
 
   /* ================= Gift box ================= */
-  const gift = $('#gift');
+  const gift = $('#gift'), giftMsg = $('#giftMsg');
   gift.addEventListener('click', () => {
     const first = !gift.classList.contains('open');
     gift.classList.add('open'); $('#giftHint').classList.add('gone'); gift.setAttribute('aria-expanded', 'true');
     const r = gift.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * .35;
     burst(cx, cy, first ? 90 : 40); emojiBurst(cx, cy, first ? 22 : 10);
-    $('#giftMsg').classList.add('show');
+    giftMsg.textContent = wp > .28 ? 'Some things fade. This is still for you. 🥀' : 'Surprise! You deserve something beautiful today. 💝';
+    giftMsg.classList.add('show');
   });
 
-  /* ================= Cake & wish ================= */
+  /* ================= Cake & wish (the wish button locks once the candles have gone out) ================= */
   const cake = $('#cake'), wish = $('#wish'), wishMsg = $('#wishMsg');
-  let blown = false;
+  const WISH_TXT = 'May all your wishes come true!';
+  let blown = false, wishLocked = false;
+  const shake = (el) => { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); };
+  wish.addEventListener('animationend', () => wish.classList.remove('shake'));
   wish.addEventListener('click', () => {
+    if (wishLocked) {                                    // deliberate, visible: the button is locked
+      shake(wish); wishMsg.textContent = 'The candles have already gone out.'; wishMsg.classList.add('show');
+      return;
+    }
     blown = !blown; $('#wishHint').classList.add('gone');
     cake.classList.toggle('out', blown);
+    wishMsg.textContent = WISH_TXT;
     if (blown) {
       const r = cake.getBoundingClientRect();
       burst(r.left + r.width / 2, r.top + r.height * .3, 80); emojiBurst(r.left + r.width / 2, r.top + r.height * .3, 12);
@@ -228,78 +258,20 @@
     }
   });
 
-  /* ================= Music player ================= */
-  const audio = $('#audio'), player = $('#player'), playBtn = $('#playBtn'), seek = $('#seek'), vol = $('#vol');
-  const tCur = $('#tCur'), tDur = $('#tDur'), note = $('#musicNote'), invite = $('#musicInvite');
-  let dragging = false;
-
-  const fmt = (t) => (isFinite(t) && t > 0) ? Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') : '0:00';
-  const fill = (el, pct) => el.style.setProperty('--p', pct + '%');
-
-  function showMusicInvite() {
-    setTimeout(() => {
-      if (!player.classList.contains('playing')) invite.hidden = false;
-      requestAnimationFrame(() => invite.classList.add('show'));
-      setTimeout(hideInvite, 8000);
-    }, 3000);
-  }
-  function hideInvite() { invite.classList.remove('show'); setTimeout(() => (invite.hidden = true), 700); }
-  invite.addEventListener('click', () => setTimeout(hideInvite, 600));
-
-  function setPlaying(on) {
-    player.classList.toggle('playing', on);
-    playBtn.setAttribute('aria-label', on ? 'Pause' : 'Play');
-    if (on && !invite.hidden) hideInvite();
-  }
-
-  function fail(msg) {
-    player.classList.add('missing'); setPlaying(false);
-    if (msg) note.textContent = msg;
-    note.hidden = false;
-  }
-
-  function sync() {
-    const d = audio.duration, c = audio.currentTime;
-    if (!dragging) { const pct = isFinite(d) && d > 0 ? (c / d) * 100 : 0; seek.value = pct; fill(seek, pct); }
-    tCur.textContent = fmt(dragging ? (seek.value / 100) * d : c);
-    tDur.textContent = fmt(d);
-  }
-
+  /* ================= The old music player: no audio, and it says so ================= */
+  const playBtn = $('#playBtn'), musicNote = $('#musicNote');
+  let playTries = 0;
+  playBtn.addEventListener('animationend', (e) => { if (e.animationName === 'shake') playBtn.classList.remove('shake'); });
   playBtn.addEventListener('click', () => {
-    if (audio.paused) {
-      const p = audio.play();
-      if (p && p.catch) p.catch(() => { if (audio.error) fail(); else note.hidden = true; setPlaying(false); });
-    } else audio.pause();
+    playTries++; shake(playBtn);
+    if (playTries >= 2) playBtn.classList.add('snapped');   // the lock gives way, but nothing plays
+    musicNote.hidden = false;
   });
-  audio.addEventListener('play', () => setPlaying(true));
-  audio.addEventListener('pause', () => setPlaying(false));
-  audio.addEventListener('ended', () => { setPlaying(false); audio.currentTime = 0; sync(); });
-  audio.addEventListener('timeupdate', sync);
-  audio.addEventListener('loadedmetadata', sync);
-  audio.addEventListener('durationchange', sync);
-  audio.addEventListener('error', () => fail());
 
-  seek.addEventListener('pointerdown', () => { dragging = true; });
-  seek.addEventListener('input', () => {
-    fill(seek, seek.value);
-    if (isFinite(audio.duration)) { dragging = true; tCur.textContent = fmt((seek.value / 100) * audio.duration); }
-  });
-  seek.addEventListener('change', () => {
-    if (isFinite(audio.duration)) audio.currentTime = (seek.value / 100) * audio.duration;
-    dragging = false; sync();
-  });
-  addEventListener('pointerup', () => setTimeout(() => { if (dragging) { dragging = false; sync(); } }, 60));
-
-  vol.addEventListener('input', () => { audio.volume = +vol.value; fill(vol, vol.value * 100); });
-  audio.volume = +vol.value;
-
-  if (audio.error || audio.networkState === 3) fail();   // file already known to be missing
-  setTimeout(() => { if (audio.error || audio.networkState === 3) fail(); }, 600);
-
-  /* ================= 3D photo carousel (driven by the audio element) ================= */
-  const ring = $('#ring'), faces = [...ring.querySelectorAll('.photo')];
+  /* ================= 3D photo carousel (turns slowly while it is on screen) ================= */
+  const ring = $('#ring'), gallery = $('#gallery'), faces = [...ring.querySelectorAll('.photo')];
   const STEP = 72, SPEED = 360 / 54;            // one full turn in ~54 seconds
-  let angle = 0, spinning = false, snapping = false, lastT = 0, gRaf = 0;
+  let angle = 0, spinning = false, snapping = false, lastT = 0, gRaf = 0, galVisible = false;
 
   function paintRing() {
     ring.style.transform = `translateZ(calc(var(--r) * -1)) rotateY(${-angle}deg)`;
@@ -315,9 +287,11 @@
     if (!snapping) { angle += SPEED * dt; paintRing(); }
     gRaf = requestAnimationFrame(galTick);
   }
-  function spin(on) {
-    spinning = on && !reduced;                  // reduced motion: gallery stays still (use the arrows)
-    $('#gallery').classList.toggle('live', spinning);   // stage lights glow & turn with the music
+  function updateSpin() {
+    const on = galVisible && !document.hidden && !reduced;   // reduced motion: gallery stays still (use the arrows)
+    if (on === spinning) return;
+    spinning = on;
+    gallery.classList.toggle('live', spinning);
     if (spinning && !gRaf) { lastT = performance.now(); gRaf = requestAnimationFrame(galTick); }
   }
   function stepRing(dir) {
@@ -325,9 +299,10 @@
     angle = (Math.round(angle / STEP) + dir) * STEP; paintRing();
     setTimeout(() => { ring.classList.remove('snap'); snapping = false; lastT = performance.now(); }, 820);
   }
-  audio.addEventListener('play', () => spin(true));
-  audio.addEventListener('pause', () => spin(false));
-  audio.addEventListener('ended', () => spin(false));
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((es) => { galVisible = es[0].isIntersecting; updateSpin(); }, { threshold: .05 }).observe(gallery);
+  } else { galVisible = true; updateSpin(); }
+  document.addEventListener('visibilitychange', updateSpin);
   $('#galPrev').addEventListener('click', () => stepRing(-1));
   $('#galNext').addEventListener('click', () => stepRing(1));
   faces.forEach((f) => {                         // graceful placeholder for missing photos
@@ -335,60 +310,210 @@
     img.addEventListener('error', miss);
     if (img.complete && !img.naturalWidth) miss();
   });
-  if (!reduced) {                                // soft lights rising off the stage while the music plays
-    const gal = $('#gallery');
+  if (!reduced) {                                // soft lights rising off the stage
     for (let i = 0; i < 9; i++) {
       const m = document.createElement('i');
       m.className = 'mote';
       m.style.cssText = `--x:${rnd(14, 86)}%;--s:${rnd(3, 6).toFixed(1)}px;--d:${rnd(5, 8).toFixed(1)}s;--dl:${-rnd(0, 7).toFixed(1)}s;--dx:${rnd(-24, 24).toFixed(0)}px`;
-      gal.appendChild(m);
+      gallery.appendChild(m);
     }
   }
   paintRing();
 
-  /* ================= Side celebration while the music plays ================= */
-  ['l', 'r'].forEach((s) => {
-    const g = document.createElement('div');
-    g.className = 'side-glow ' + s; g.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(g);
-  });
-  const SIDE_COLS = ['#f9b8cf', '#ff8fb5', '#e8799f', '#ff6fa3', '#fde4ec', '#e6cfa8'];
-  let sideTimer = 0, sideFlip = 0;
+  /* =====================================================================
+     THE WITHERING — scroll-driven. One passive scroll listener + rAF.
+     It only writes CSS variables on <html> (plus a few SVG attributes);
+     style.css turns them into colour, texture, damage and photo ageing.
+     ===================================================================== */
+  const root = document.documentElement, themeMeta = $('meta[name="theme-color"]');
+  const partyEl = $('#party'), msgEl = $('#message'), wishSec = $('#wishSec'), musicEl = $('#music'), memEl = $('#memories'), thanksEl = $('#thanks');
+  const petalBox = $('#petals'), dustBox = $('#dust'), roughMap = $('#roughMap'), cakeEl = $('#cake');
 
-  function sideBurst(side, n) {                  // confetti cannon firing in from the screen edge
-    const left = side === 'l';
+  /* stops: bloom → fading → withering (text flips light) → dark → completely withered */
+  const KEYS = [0, .3, .46, .5, .76, 1];
+  const PAL = {
+    '--cream':   ['#fff8f3', '#e6d3c8', '#9c8678', '#5a443d', '#1d1411', '#0b0706'],
+    '--bgtop':   ['#fff3f7', '#eadad0', '#8e786d', '#46332d', '#241714', '#0f0908'],
+    '--blush':   ['#fde4ec', '#e1c9c6', '#85706a', '#46342f', '#241816', '#150d0c'],
+    '--pink':    ['#f9b8cf', '#d3a0a6', '#9a746a', '#5a3a39', '#3d2525', '#2b1819'],
+    '--champ':   ['#e6cfa8', '#d0b48a', '#b09470', '#8a7352', '#6e5a3d', '#5e4d34'],
+    '--ink':     ['#5b2a3f', '#54343a', '#4a2f30', '#e6d6c2', '#d6c5ab', '#cdbb9f'],
+    '--ink-soft':['#8a5568', '#7c5457', '#5e403b', '#c9b79f', '#b6a487', '#a99877'],
+    '--rose':    ['#e8799f', '#a4667a', '#8e5a60', '#c99a8c', '#b08565', '#a8784f'],
+    '--hot':     ['#ff4d8d', '#a6445f', '#8a4048', '#d9a894', '#c08a62', '#b08a5a'],
+    '--card1':   ['#fffcfd', '#f3e6da', '#dcc8ae', '#bba585', '#a99373', '#a08b69'],
+    '--card2':   ['#fff6f2', '#ecdccc', '#cdb698', '#a89272', '#9a8666', '#948262'],
+    '--cink':    ['#5b2a3f', '#54343a', '#4a3028', '#2f2018', '#1c120c', '#120a05'],
+    '--csoft':   ['#8a5568', '#7c5457', '#6a4a40', '#4a362a', '#3a2a1e', '#33241a'],
+    '--crose':   ['#e8799f', '#b0617a', '#8f5460', '#6e3a38', '#5c2a26', '#552420'],
+    '--chot':    ['#ff4d8d', '#c04a6c', '#a04458', '#7a2a30', '#651d22', '#5a1a1d'],
+    '--b1':      ['#ff6fa3', '#c9778f', '#8f5a5a', '#6e4a3a', '#4a3028', '#38251e'],
+    '--b2':      ['#ff4d8d', '#b4587a', '#7a4048', '#573429', '#3a231c', '#2a1914'],
+    '--bt':      ['#ffffff', '#ffffff', '#f0dcd0', '#c9b79f', '#a89677', '#8f7f63'],
+    '--cb1':     ['#ff6fa3', '#c9778f', '#8a4a4a', '#5a3030', '#3a2020', '#2a1614'],
+    '--cb2':     ['#ff4d8d', '#b4587a', '#6a3a3a', '#4a2626', '#2a1616', '#1c0f0d'],
+    '--sh':      ['#e8799f', '#b88a8a', '#6a4038', '#1c0c08', '#0a0403', '#050202'],
+    '--rib':     ['#f0dcb8', '#d2bc98', '#a58f6c', '#6e5c44', '#4c3f2d', '#382d20'],
+    '--rp':      ['#f48fb1', '#d78a9b', '#a56c6a', '#7a4540', '#4b2423', '#2f1616'],
+    '--rp2':     ['#e0577f', '#b8627a', '#85534f', '#5a2e2a', '#381a1a', '#241010'],
+    '--rl':      ['#c23a6a', '#8f4a5a', '#5f3030', '#3b1f1c', '#24120f', '#1a0d0b'],
+    '--rs':      ['#5f9a6a', '#7a8a5a', '#6b6240', '#4d422c', '#33291c', '#241d14'],
+    '--petal':   ['#f9b8cf', '#d6a3aa', '#a0605a', '#7a3a30', '#5a2420', '#4a1b1b']
+  };
+  const toRGB = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const PAL_RGB = Object.entries(PAL).map(([k, v]) => [k, v.map(toRGB)]);
+  const CREAM = PAL_RGB[0][1];
+  function colorAt(arr, p) {
+    let i = 0;
+    while (i < KEYS.length - 2 && p > KEYS[i + 1]) i++;
+    const t = clamp((p - KEYS[i]) / (KEYS[i + 1] - KEYS[i])), a = arr[i], b = arr[i + 1];
+    return 'rgb(' + a.map((v, j) => Math.round(v + (b[j] - v) * t)).join(',') + ')';
+  }
+
+  /* anchors: decay is tied to what is on screen, not to raw page length */
+  let A = null;
+  const P_AT = [0, .36, .62, .86, 1];            // message → cake scene → music player → carousel → finale
+  function measure() {
+    if (partyEl.hidden) return;
+    const y = scrollY, top = (el, f = 0) => { const r = el.getBoundingClientRect(); return r.top + y + r.height * f; };
+    A = { y: [top(msgEl), top(wishSec, .5), top(musicEl, .5), top(memEl, .5), top(thanksEl)], memTop: top(memEl), thTop: top(thanksEl), docH: root.scrollHeight };
+  }
+  function pAtY(c) {
+    const ys = A.y;
+    if (c <= ys[0]) return 0;
+    for (let i = 1; i < ys.length; i++) if (c <= ys[i]) return P_AT[i - 1] + (P_AT[i] - P_AT[i - 1]) * ((c - ys[i - 1]) / Math.max(1, ys[i] - ys[i - 1]));
+    return 1;
+  }
+
+  /* living rose: droops, then drops its petals one by one */
+  const lrHead = $('#lrHead'), lrP = [...document.querySelectorAll('#lifeRose .lpw')].map((g, i) => {
+    const a = (i * 60 * Math.PI) / 180;
+    return { g, px: 60 + Math.sin(a) * 16, py: 56 - Math.cos(a) * 16, lx: Math.sin(a) * 16, ly: -Math.cos(a) * 16,
+      t: .1 + i * .085, gx: [18, 34, 52, 70, 86, 100][(i * 5) % 6] + rnd(-4, 4), gy: 190 + rnd(0, 5), rot: rnd(-150, 150) };
+  });
+  function drawLifeRose(p) {
+    const th = p * 30;
+    lrHead.setAttribute('transform', `rotate(${th.toFixed(2)} 60 196)`);
+    const r = (th * Math.PI) / 180, c = Math.cos(-r), s = Math.sin(-r);
+    for (const q of lrP) {
+      const f = clamp((p - q.t) / .12);
+      if (f === 0) { q.g.removeAttribute('transform'); q.g.style.opacity = ''; continue; }
+      const e = smooth(f), dx = q.gx - 60, dy = q.gy - 196;
+      const tx = (60 + dx * c - dy * s - q.px) * e, ty = (196 + dx * s + dy * c - q.py) * e;
+      q.g.setAttribute('transform', `translate(${tx.toFixed(1)} ${ty.toFixed(1)}) rotate(${(q.rot * e).toFixed(0)} ${q.lx.toFixed(1)} ${q.ly.toFixed(1)})`);
+      q.g.style.opacity = (1 - .25 * e).toFixed(2);
+    }
+  }
+
+  /* dried petals and dead leaves that stay scattered on the page once they have fallen */
+  let scatter = [];
+  function buildScatter() {
+    if (!A || scatter.length) return;
+    const box = document.createElement('div');
+    box.id = 'scatter'; box.setAttribute('aria-hidden', 'true');
+    partyEl.appendChild(box);
+    const from = A.y[1] - innerHeight * .4, to = A.thTop + innerHeight * .5, n = W < 600 ? 22 : 38;
     for (let i = 0; i < n; i++) {
-      parts.push(make(left ? 2 : W - 2, H * rnd(.5, .95), (left ? 1 : -1) * rnd(4, 10), rnd(-16, -7), .22, rnd(90, 150)));
-    }
-    run();
-  }
-  function sideBalloon(side) {                   // a balloon pops up along the edge and floats away
-    const b = document.createElement('i');
-    b.className = 'sballoon ' + side;
-    b.style.cssText = `--sz:${(W < 600 ? rnd(30, 42) : rnd(40, 62)).toFixed(0)}px;--c:${pick(SIDE_COLS)};--e:${rnd(0, W < 600 ? 20 : 70).toFixed(0)}px;--d:${rnd(6, 9).toFixed(1)}s;--sw:${rnd(8, 18).toFixed(0)}px`;
-    b.addEventListener('animationend', () => b.remove());
-    document.body.appendChild(b);
-  }
-  function sideTick() {
-    if (document.hidden || parts.length > 300) return;
-    const side = (sideFlip ^= 1) ? 'l' : 'r';
-    sideBurst(side, 16);
-    if (Math.random() < .65) sideBalloon(side);
-  }
-  function sideCelebrate(on) {
-    document.body.classList.toggle('celebrating', on);
-    if (reduced) return;                         // reduced motion: soft glow only
-    clearInterval(sideTimer); sideTimer = 0;
-    if (on) {
-      sideBurst('l', 34); sideBurst('r', 34); sideBalloon('l'); sideBalloon('r');
-      sideTimer = setInterval(sideTick, 1000);
-    } else {
-      document.querySelectorAll('.sballoon').forEach((b) => { b.classList.add('leaving'); setTimeout(() => b.remove(), 700); });
+      const y = from + (to - from) * Math.pow(Math.random(), .75), leaf = Math.random() < .3, s = leaf ? rnd(12, 24) : rnd(8, 17);
+      const el = document.createElement('i');
+      el.className = 'sc' + (leaf ? ' leaf' : '');
+      el.style.cssText = `left:${rnd(1, 97).toFixed(1)}%;top:${y.toFixed(0)}px;width:${s.toFixed(0)}px;height:${(leaf ? s * .55 : s * 1.3).toFixed(0)}px;--r:${rnd(0, 360).toFixed(0)}deg`;
+      box.appendChild(el);
+      scatter.push({ el, th: pAtY(y) - .05, on: false });
     }
   }
-  audio.addEventListener('play', () => sideCelebrate(true));
-  audio.addEventListener('pause', () => sideCelebrate(false));
-  audio.addEventListener('ended', () => sideCelebrate(false));
+
+  /* falling petals while scrolling */
+  function spawnPetal(leaf) {
+    const el = document.createElement('i'), s = leaf ? rnd(12, 20) : rnd(9, 17);
+    el.className = 'petal' + (leaf ? ' leaf' : '');
+    el.style.cssText = `left:${rnd(2, 96).toFixed(1)}%;width:${s.toFixed(0)}px;height:${(leaf ? s * .55 : s * 1.3).toFixed(0)}px`;
+    petalBox.appendChild(el);
+    el.animate([
+      { transform: 'translate(0,-6vh) rotate(0deg)', opacity: 0 },
+      { opacity: .6, offset: .12 },
+      { opacity: .45, offset: .85 },
+      { transform: `translate(${rnd(-90, 90).toFixed(0)}px,108vh) rotate(${rnd(-320, 320).toFixed(0)}deg)`, opacity: 0 }
+    ], { duration: rnd(7000, 12000), easing: 'ease-in-out' }).onfinish = () => el.remove();
+  }
+
+  /* a few dust motes, shown only in the late stages */
+  if (!reduced) {
+    for (let i = 0; i < 26; i++) {
+      const d = document.createElement('i');
+      d.className = 'dust';
+      d.style.cssText = `--x:${rnd(0, 100).toFixed(0)}%;--y:${rnd(10, 100).toFixed(0)}%;--s:${rnd(1.5, 3.5).toFixed(1)}px;--d:${rnd(9, 18).toFixed(1)}s;--dl:${-rnd(0, 18).toFixed(1)}s;--dx:${rnd(-40, 40).toFixed(0)}px`;
+      dustBox.appendChild(d);
+    }
+  }
+
+  let wRaf = 0, lastP = -1, lastAge = -1, lastFin = -1, petalY = 0, decayed = false, lastRough = -1;
+  const FLAME_AT = [.22, .28, .34];              // each candle goes out in turn
+  let flameOut = [false, false, false];
+
+  function witherFrame() {
+    wRaf = 0;
+    if (partyEl.hidden) return;
+    if (!A) measure();
+    const vh = innerHeight, y = scrollY;
+    const p = A ? clamp(pAtY(y + vh * .5)) : 0;
+
+    /* photo age: fresh as the carousel arrives, old by the time it leaves */
+    const s0 = A ? A.memTop - vh * .75 : 0;
+    const age = A ? clamp((y - s0) / (vh * .9)) : 0;
+    const fin = A ? clamp((y + vh - A.thTop) / (vh * .9)) : 0;
+
+    if (Math.abs(p - lastP) > .0008 || Math.abs(age - lastAge) > .002 || Math.abs(fin - lastFin) > .002) {
+      lastP = p; lastAge = age; lastFin = fin; wp = p;
+      const st = root.style;
+      for (const [k, arr] of PAL_RGB) st.setProperty(k, colorAt(arr, p));
+      st.setProperty('--wp', p.toFixed(4));
+      st.setProperty('--age', age.toFixed(4));
+      st.setProperty('--fin', fin.toFixed(3));
+      st.setProperty('--fr', clamp(1 - fin * 1.6).toFixed(3));                       // the living rose gives way to the dried one
+      st.setProperty('--fl', clamp(1 - (p - .1) / .24).toFixed(3));                  // balloons / hearts / sparkles fade out
+      st.setProperty('--paper', (smooth(clamp((p - .08) / .6)) * .7).toFixed(3));    // aged paper, stains, burnt corners
+      st.setProperty('--crk', (smooth(clamp((p - .3) / .45)) * .85).toFixed(3));     // cracks on cards and buttons
+      st.setProperty('--vig', Math.max(smooth(clamp((p - .12) / .7)) * .9, fin).toFixed(3));
+      st.setProperty('--dust', smooth(clamp((p - .5) / .35)).toFixed(3));
+      if (themeMeta) themeMeta.content = colorAt(CREAM, p);
+
+      /* candles go out one by one (and smoke once) */
+      FLAME_AT.forEach((t, i) => {
+        st.setProperty('--f' + (i + 1), clamp((t - p) / .03).toFixed(2));
+        const out = p >= t;
+        if (out !== flameOut[i]) { flameOut[i] = out; cakeEl.classList.toggle('s' + (i + 1), out); }
+      });
+
+      /* typography frays */
+      const dc = p > .4;
+      if (dc !== decayed) { decayed = dc; root.classList.toggle('decayed', dc); }
+      if (dc) { const sc = ((p - .4) / .6) * 2.6; if (Math.abs(sc - lastRough) > .05) { lastRough = sc; roughMap.setAttribute('scale', sc.toFixed(2)); } }
+
+      /* the wish button locks (visibly, with a padlock) once the garden has faded past the cake */
+      const lock = p > .52;
+      if (lock !== wishLocked) {
+        wishLocked = lock;
+        wish.classList.toggle('locked', lock);
+        wish.setAttribute('aria-disabled', lock ? 'true' : 'false');
+        if (!lock && !blown) { wishMsg.classList.remove('show'); wishMsg.textContent = WISH_TXT; }
+      }
+
+      drawLifeRose(p);
+      for (const q of scatter) { const on = p >= q.th; if (on !== q.on) { q.on = on; q.el.classList.toggle('on', on); } }
+    }
+
+    /* a dried petal (or leaf) every ~130px of scrolling, in the later stages */
+    if (!reduced && p > .12 && fin < .9 && Math.abs(y - petalY) > 130) {
+      petalY = y;
+      if (petalBox.childElementCount < 9) spawnPetal(p > .5 && Math.random() < .35);
+    }
+  }
+  function queueWither() { if (!wRaf) wRaf = requestAnimationFrame(witherFrame); }
+  addEventListener('scroll', queueWither, { passive: true });
+  addEventListener('resize', () => { measure(); queueWither(); });
+  addEventListener('load', () => { measure(); queueWither(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); queueWither(); });
 
   resize();
 })();
