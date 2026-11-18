@@ -76,23 +76,24 @@
   </symbol>
 </svg>
 
-<!-- 1. THE QUESTION -->
-<section id="intro" class="screen">
-  <div class="ribbon-mark rise" style="--i:0" aria-hidden="true">🎀</div>
-  <h1 class="rise" style="--i:1">Hello, Happy! 🎀</h1>
-  <p class="sub rise" style="--i:2">Maliit na little surprise for you...</p>
-  <div class="ask rise" style="--i:3">
-    <h2>Birthday mo ngayun diba?</h2>
-    <div class="btns">
-      <span class="yes-wrap"><span class="clickme" aria-hidden="true">Click me!<b>↓</b></span><button id="yes" class="btn btn-yes" type="button">Oo! 💗</button></span>
-      <span id="noSlot" class="no-slot"><button id="no" class="btn btn-no" type="button">Hinde 🙈</button></span>
-    </div>
-    <p id="hint" class="hint" aria-live="polite">&nbsp;</p>
+<!-- 1. THE CINEMATIC LOADER (6 s: blooming pink → withered garden, then dissolves into the page) -->
+<div id="loader" aria-hidden="true">
+  <div class="ld-paper"></div>
+  <div class="ld-glow"></div>
+  <div id="ldGround"></div>
+  <div id="ldMotes"></div>
+  <div id="ldPetals"></div>
+  <div class="ld-roses">
+    <svg class="s" style="--dr:-14deg" viewBox="0 0 100 130"><use href="#rose"/></svg>
+    <svg style="--dr:9deg" viewBox="0 0 100 130"><use href="#rose"/></svg>
+    <svg class="s" style="--dr:17deg" viewBox="0 0 100 130"><use href="#rose"/></svg>
   </div>
-</section>
+  <p class="ld-text"><span>A little moment...</span><span>Something is taking shape...</span><span>Just a little longer...</span><span>Almost there...</span></p>
+  <div class="ld-bar"><i></i></div>
+</div>
 
 <!-- 2. THE CELEBRATION (slowly becomes an abandoned garden) -->
-<main id="party" hidden>
+<main id="party">
   <!-- the rose that follows you down the page and loses its petals -->
   <svg id="lifeRose" class="life-rose" viewBox="0 0 120 200" aria-hidden="true" focusable="false">
     <g id="lrHead">
@@ -157,12 +158,10 @@
       <g fill="#fff8f3"><circle cx="74" cy="106" r="9"/><circle cx="94" cy="109" r="9"/><circle cx="114" cy="106" r="9"/><circle cx="134" cy="109" r="9"/><circle cx="154" cy="106" r="9"/><circle cx="170" cy="108" r="8"/></g>
       <g fill="#fff"><rect x="87" y="66" width="9" height="36" rx="3"/><rect x="116" y="66" width="9" height="36" rx="3"/><rect x="145" y="66" width="9" height="36" rx="3"/></g>
       <g fill="#ff8fb5"><rect x="87" y="76" width="9" height="5"/><rect x="116" y="84" width="9" height="5"/><rect x="145" y="76" width="9" height="5"/></g>
-      <g class="flames">
-        <path class="flame" style="--d:0s" d="M91.500 46c5 6 6 12 0 17-6-5-5-11 0-17z" fill="#ffc94d"/>
-        <path class="flame" style="--d:.3s" d="M120.500 46c5 6 6 12 0 17-6-5-5-11 0-17z" fill="#ffc94d"/>
-        <path class="flame" style="--d:.6s" d="M149.500 46c5 6 6 12 0 17-6-5-5-11 0-17z" fill="#ffc94d"/>
-      </g>
-      <g class="smoke" fill="#e9d5b5"><circle cx="91" cy="58" r="3"/><circle cx="120" cy="58" r="3"/><circle cx="149" cy="58" r="3"/></g>
+      <g fill="#2a1c14"><rect x="90.200" y="58" width="2.600" height="9" rx="1"/><rect x="119.200" y="59" width="2.600" height="8" rx="1" transform="rotate(8 120.500 63)"/><rect x="148.200" y="58" width="2.600" height="9" rx="1" transform="rotate(-6 149.500 62)"/></g>
+      <path class="cake-dried" d="M64 128c14 6 22-4 36 2s26-6 40 0 26-4 36 2v22H64z" fill="#8a6a50"/>
+      <g class="cake-cracks" fill="none" stroke="#3a1f18" stroke-width="1.100" stroke-linecap="round"><path d="M80 108l6 12-5 10 7 14"/><path d="M130 106l-4 14 6 10-3 14"/><path d="M160 112l-8 12 6 8"/><path d="M48 154l8 14-4 12M170 160l-6 16 5 10M96 170l5 12-4 10"/></g>
+      <g class="cake-crumbs" fill="#b99a78"><circle cx="40" cy="232" r="2.600"/><circle cx="58" cy="238" r="1.800"/><circle cx="196" cy="234" r="2.400"/><circle cx="178" cy="240" r="1.600"/><circle cx="120" cy="244" r="2"/><ellipse cx="214" cy="226" rx="4" ry="2.400" fill="#7a3a34"/><ellipse cx="22" cy="228" rx="4" ry="2.400" fill="#7a3a34"/></g>
     </svg>
     <span id="wishHint" class="clickme" aria-hidden="true">Click me!<b>↓</b></span>
     <button id="wish" class="btn btn-yes" type="button">Make a Wish ✨</button>
