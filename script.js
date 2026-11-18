@@ -119,84 +119,63 @@
     }
   }
 
-  /* ================= Intro: the dodging NO button ================= */
-  const intro = $('#intro'), yes = $('#yes'), no = $('#no'), slot = $('#noSlot'), hint = $('#hint');
-  const lines = ['Nope, try again 😜', 'Too slow! 🏃‍♀️', 'Are you sure? 🥺', 'It ran away! 💨', 'Hehe, not today 🙈', 'Psst… YES is right there 💗',
-                 'You cannot catch it! 😆', 'Okay okay… you know the answer 🎀'];
-  let dodges = 0, busy = 0, started = false;
+  /* ================= Cinematic loader (6 s, runs once) ================= */
+  const loader = $('#loader'), party = $('#party');
+  let partyStarted = false;
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
-  function place(x, y) { no.style.left = x + 'px'; no.style.top = y + 'px'; }
-
-  function dodge() {
-    if (started || busy) return;
-    busy = 1; setTimeout(() => (busy = 0), 220);
-    const w = no.offsetWidth, h = no.offsetHeight, pad = 14;
-    if (!no.classList.contains('flee')) {            // lift out of flow, keep the layout intact
-      const r = no.getBoundingClientRect();
-      slot.style.width = r.width + 'px'; slot.style.height = r.height + 'px';
-      place(r.left, r.top); void no.offsetWidth;
-      no.classList.add('flee');
+  function buildLoader() {
+    const w = innerWidth, sm = w < 600, add = (box, cls, css) => { const e = document.createElement('i'); e.className = cls; e.style.cssText = css; box.appendChild(e); };
+    for (let i = 0; i < (sm ? 16 : 26); i++) {          // petals and leaves let go one by one, from 2.5 s to 14 s
+      const leaf = Math.random() < .28;
+      add($('#ldPetals'), 'ld-p' + (leaf ? ' leaf' : ''), `left:${rnd(4, 94).toFixed(0)}%;--s:${rnd(9, 16).toFixed(0)}px;--dl:${rnd(2.5, 12.5).toFixed(2)}s;--d:${rnd(5, 7.5).toFixed(2)}s;--dx:${rnd(-80, 80).toFixed(0)}px;--r:${rnd(-320, 320).toFixed(0)}deg`);
     }
-    const cur = no.getBoundingClientRect(), yr = yes.getBoundingClientRect();
-    let x, y, tries = 0;
-    do {
-      x = rnd(pad, Math.max(pad, W - w - pad)); y = rnd(pad, Math.max(pad, H - h - pad)); tries++;
-    } while (tries < 30 && (Math.hypot(x - cur.left, y - cur.top) < 140 ||
-      (x < yr.right + 12 && x + w > yr.left - 12 && y < yr.bottom + 12 && y + h > yr.top - 12)));
-    dodges++;
-    const s = Math.max(.1, 1 - dodges * .1);          // shrinks every dodge until it is a tiny dot
-    no.style.setProperty('--s', s);
-    no.style.opacity = s <= .2 ? .55 : 1;
-    yes.style.setProperty('--ys', Math.min(1.3, 1 + dodges * .03));
-    hint.textContent = lines[Math.min(dodges - 1, lines.length - 1)] || pick(lines);
-    if (!reduced && Math.random() < .25) {            // sometimes vanish and reappear elsewhere
-      no.classList.add('ghost');
-      setTimeout(() => { place(x, y); no.classList.remove('ghost'); }, 230);
-    } else place(x, y);
-    if (document.activeElement === no) no.blur();
+    for (let i = 0; i < (sm ? 8 : 12); i++) {           // some stay where they fell
+      const leaf = Math.random() < .3;
+      add($('#ldGround'), 'ld-s' + (leaf ? ' leaf' : ''), `--x:${rnd(4, 94).toFixed(0)}%;--b:${rnd(1, 9).toFixed(1)}%;--s:${rnd(8, 14).toFixed(0)}px;--r:${rnd(0, 360).toFixed(0)}deg;--dl:${rnd(6, 15).toFixed(1)}s`);
+    }
+    for (let i = 0; i < (sm ? 9 : 14); i++)             // light particles drifting away
+      add($('#ldMotes'), 'ld-m', `--x:${rnd(4, 96).toFixed(0)}%;--s:${rnd(3, 6).toFixed(1)}px;--dl:${rnd(0, 11).toFixed(2)}s;--d:${rnd(4.5, 6.5).toFixed(2)}s`);
   }
 
-  no.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') dodge(); });
-  no.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') { e.preventDefault(); dodge(); } });
-  no.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); }, { passive: false });
-  no.addEventListener('click', (e) => { e.preventDefault(); dodge(); });
-  document.addEventListener('pointermove', (e) => {   // mouse approaching? run!
-    if (started || e.pointerType !== 'mouse' || !no.classList.contains('flee')) return;
-    const r = no.getBoundingClientRect();
-    if (Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) < 90) dodge();
-  }, { passive: true });
-  addEventListener('resize', () => {
-    resize();
-    if (no.classList.contains('flee')) {
-      const x = Math.min(parseFloat(no.style.left) || 14, Math.max(14, W - no.offsetWidth - 14));
-      const y = Math.min(parseFloat(no.style.top) || 14, Math.max(14, H - no.offsetHeight - 14));
-      place(x, y);
-    }
-  });
+  
+  /* the celebration begins (what the old YES button used to start) */
+  function startParty() {
+    if (partyStarted) return;
+    partyStarted = true;
+    scrollTo(0, 0);
+    party.classList.add('in');
+    burst(W * .25, H * .7, 90); burst(W * .75, H * .7, 90);
+    addBalloons(); addSparkles();
+    for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 250);
+    setInterval(spawnHeart, 1100);
+    setInterval(() => { if (!document.hidden && wp < .25) rain(reduced ? 1 : 3); }, 900);
+    initReveal();
+    requestAnimationFrame(() => { measure(); buildScatter(); queueWither(); });
+  }
 
-  /* ================= YES: start the celebration ================= */
-  yes.addEventListener('click', () => {
-    if (started) return;
-    started = true;
-    const r = yes.getBoundingClientRect();
-    burst(r.left + r.width / 2, r.top, 140);
-    emojiBurst(r.left + r.width / 2, r.top, 22);
-    no.style.pointerEvents = 'none'; no.style.opacity = 0;
-    intro.classList.add('out');
-    setTimeout(() => {
-      intro.hidden = true;
-      const party = $('#party');
-      party.hidden = false; scrollTo(0, 0);
-      requestAnimationFrame(() => party.classList.add('in'));
-      burst(W * .25, H * .7, 90); burst(W * .75, H * .7, 90);
-      addBalloons(); addSparkles();
-      for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 250);
-      setInterval(spawnHeart, 1100);
-      setInterval(() => { if (!document.hidden && wp < .25) rain(reduced ? 1 : 3); }, 900);
-      initReveal();
-      requestAnimationFrame(() => { measure(); buildScatter(); queueWither(); });
-    }, 750);
-  });
+  function endLoader() {
+    startParty();
+    loader.classList.add('done');
+    const fin = () => {
+      if (!loader.isConnected) return;
+      loader.remove();
+      document.documentElement.classList.remove('ld-lock');
+    };
+    loader.addEventListener('transitionend', (e) => { if (e.target === loader && e.propertyName === 'opacity') fin(); });
+    setTimeout(fin, 2300);
+  }
+
+  function startLoader() {
+    if (!loader || loader.dataset.ran) return;
+    loader.dataset.ran = '1';
+    document.documentElement.classList.add('ld-lock');
+    scrollTo(0, 0);
+    buildLoader();
+    requestAnimationFrame(() => loader.classList.add('run'));
+    setTimeout(endLoader, reduced ? 1400 : 18000);
+  }
+  addEventListener('resize', resize);
 
   /* ================= Scroll reveals (+ cinematic word reveal for the letters) ================= */
   function splitWords() {
@@ -246,16 +225,10 @@
       shake(wish); wishMsg.textContent = 'The candles have already gone out.'; wishMsg.classList.add('show');
       return;
     }
-    blown = !blown; $('#wishHint').classList.add('gone');
-    cake.classList.toggle('out', blown);
-    wishMsg.textContent = WISH_TXT;
-    if (blown) {
-      const r = cake.getBoundingClientRect();
-      burst(r.left + r.width / 2, r.top + r.height * .3, 80); emojiBurst(r.left + r.width / 2, r.top + r.height * .3, 12);
-      wishMsg.classList.add('show'); wish.textContent = 'Relight the candles 🕯️';
-    } else {
-      wishMsg.classList.remove('show'); wish.textContent = 'Make a Wish ✨';
-    }
+    blown = true; $('#wishHint').classList.add('gone');
+    wishMsg.textContent = WISH_TXT; wishMsg.classList.add('show');
+    const r = cake.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height * .3, 60); emojiBurst(r.left + r.width / 2, r.top + r.height * .3, 10);
   });
 
   /* ================= The old music player: no audio, and it says so ================= */
@@ -327,7 +300,7 @@
      ===================================================================== */
   const root = document.documentElement, themeMeta = $('meta[name="theme-color"]');
   const partyEl = $('#party'), msgEl = $('#message'), wishSec = $('#wishSec'), musicEl = $('#music'), memEl = $('#memories'), thanksEl = $('#thanks');
-  const petalBox = $('#petals'), dustBox = $('#dust'), roughMap = $('#roughMap'), cakeEl = $('#cake');
+  const petalBox = $('#petals'), dustBox = $('#dust'), roughMap = $('#roughMap');
 
   /* stops: bloom → fading → withering (text flips light) → dark → completely withered */
   const KEYS = [0, .3, .46, .5, .76, 1];
@@ -366,7 +339,7 @@
   function colorAt(arr, p) {
     let i = 0;
     while (i < KEYS.length - 2 && p > KEYS[i + 1]) i++;
-    const t = clamp((p - KEYS[i]) / (KEYS[i + 1] - KEYS[i])), a = arr[i], b = arr[i + 1];
+    const t = smooth(clamp((p - KEYS[i]) / (KEYS[i + 1] - KEYS[i]))), a = arr[i], b = arr[i + 1];
     return 'rgb(' + a.map((v, j) => Math.round(v + (b[j] - v) * t)).join(',') + ')';
   }
 
@@ -448,8 +421,6 @@
   }
 
   let wRaf = 0, lastP = -1, lastAge = -1, lastFin = -1, petalY = 0, decayed = false, lastRough = -1;
-  const FLAME_AT = [.22, .28, .34];              // each candle goes out in turn
-  let flameOut = [false, false, false];
 
   function witherFrame() {
     wRaf = 0;
@@ -477,13 +448,6 @@
       st.setProperty('--vig', Math.max(smooth(clamp((p - .12) / .7)) * .9, fin).toFixed(3));
       st.setProperty('--dust', smooth(clamp((p - .5) / .35)).toFixed(3));
       if (themeMeta) themeMeta.content = colorAt(CREAM, p);
-
-      /* candles go out one by one (and smoke once) */
-      FLAME_AT.forEach((t, i) => {
-        st.setProperty('--f' + (i + 1), clamp((t - p) / .03).toFixed(2));
-        const out = p >= t;
-        if (out !== flameOut[i]) { flameOut[i] = out; cakeEl.classList.toggle('s' + (i + 1), out); }
-      });
 
       /* typography frays */
       const dc = p > .4;
@@ -516,4 +480,5 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); queueWither(); });
 
   resize();
+  startLoader();
 })();
