@@ -4,7 +4,7 @@
      --wp   page decay 0..1        --age  photo ageing 0..1
      --fl   floating decorations   --paper paper grain   --crk cracks
      --vig  vignette               --dust dust            --fin finale curtain
-     --fr   living-rose opacity    --f1..3 candle flames
+     --fr   living-rose opacity
    plus a colour palette that blends: bloom → fading → decay → withered.
    At --wp:0 every value equals the original pink design.
    ===================================================================== */
@@ -53,7 +53,6 @@ h1{font-size:clamp(2.8rem,12vw,6rem);letter-spacing:-.01em;color:var(--ink);text
 .sub{font-family:var(--serif);font-style:italic;font-size:clamp(1.15rem,4.4vw,1.6rem);color:var(--ink-soft);margin-top:14px;max-width:30ch;line-height:1.35}
 .name{font-family:var(--script);font-weight:400;font-size:clamp(2rem,9vw,3.6rem);color:var(--hot);margin-top:14px;line-height:1.2}
 .eyebrow{font-size:.85rem;letter-spacing:.08em;color:var(--rose);margin-bottom:16px}
-.ribbon-mark{font-size:2.4rem;margin-bottom:10px;animation:bob 3s ease-in-out infinite}
 .kicker{font-size:clamp(1.8rem,7vw,2.6rem);margin-bottom:26px;color:var(--ink)}
 .big2{font-size:clamp(2rem,8vw,3.2rem);text-wrap:balance}
 .sign{font-family:var(--script);font-size:clamp(1.5rem,6vw,2.1rem);color:var(--hot);margin-top:30px;line-height:1.3}
@@ -68,17 +67,9 @@ h1{font-size:clamp(2.8rem,12vw,6rem);letter-spacing:-.01em;color:var(--ink);text
 #party:not(.in) .rise{animation:none}
 @keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 @keyframes bob{50%{transform:translateY(-6px) rotate(4deg)}}
-#intro{transition:opacity .7s ease}
-#intro.out{opacity:0;pointer-events:none}
 #party{animation:fadein 1s ease both}
 @keyframes fadein{from{opacity:0}}
 
-/* ---------- Intro question ---------- */
-.ask{margin-top:clamp(28px,7vh,52px);padding:clamp(22px,5vw,34px) clamp(18px,5vw,38px);border-radius:28px;
-  background:rgba(255,255,255,.62);border:1px solid rgba(230,207,168,.7);box-shadow:0 20px 50px -24px rgba(232,121,159,.5),inset 0 1px 0 #fff;
-  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);width:min(100%,460px)}
-.ask h2{font-size:clamp(1.7rem,7vw,2.3rem)}
-.btns{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:24px}
 .btn{min-height:54px;min-width:128px;padding:0 26px;border-radius:999px;border:1.5px solid transparent;font-weight:700;font-size:1.05rem;letter-spacing:.02em;
   transition:transform .25s var(--ease),box-shadow .25s,background .25s}
 .btn-yes,.scroll-btn{position:relative;background:linear-gradient(135deg,var(--b1,#ff6fa3),var(--b2,#ff4d8d));color:var(--bt,#fff);
@@ -90,12 +81,6 @@ h1{font-size:clamp(2.8rem,12vw,6rem);letter-spacing:-.01em;color:var(--ink);text
 /* hairline cracks across buttons */
 .btn-yes::before,.scroll-btn::before,.gal-nav button::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   background:var(--crack-img) center/100% 100%;opacity:var(--crk,0);mix-blend-mode:multiply}
-.btn-no{background:#fff;color:var(--rose);border-color:var(--pink)}
-.no-slot{display:inline-block}
-.btn-no.flee{position:fixed;z-index:60;margin:0;transform:scale(var(--s,1));
-  transition:left .38s cubic-bezier(.34,1.56,.64,1),top .38s cubic-bezier(.34,1.56,.64,1),transform .3s,opacity .2s}
-.btn-no.ghost{opacity:0}
-.hint{min-height:1.5em;margin-top:18px;font-size:.95rem;color:var(--rose)}
 
 /* a deliberately locked button: padlock, no response (the click only shakes it) */
 .btn.locked{cursor:not-allowed;filter:saturate(.35) brightness(.85)}
@@ -182,24 +167,10 @@ section.reveal.in,footer.reveal.in{opacity:1;transform:none}
 .clickme.gone{opacity:0;pointer-events:none;position:absolute;visibility:hidden}
 @keyframes nudge{50%{transform:translateY(9px)}}
 
-.yes-wrap{position:relative;display:inline-block}
-.yes-wrap .clickme{position:absolute;left:-10px;right:-10px;bottom:100%;margin:0 0 6px;white-space:nowrap;pointer-events:none}
-.btns{margin-top:70px}
 
 /* ---------- Cake (candles go out as you scroll) ---------- */
 #cake{width:min(78vw,300px);height:auto;overflow:visible;margin-bottom:22px;
-  filter:saturate(calc(1 - var(--wp,0)*1.1)) sepia(calc(var(--wp,0)*.55)) brightness(calc(1 - var(--wp,0)*.4)) drop-shadow(0 20px 18px color-mix(in srgb,var(--sh,#e8799f) 30%,transparent))}
-.flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker .5s ease-in-out infinite alternate;animation-delay:var(--d);transition:opacity .3s,transform .3s}
-.flame:nth-child(1){opacity:var(--f1,1)}
-.flame:nth-child(2){opacity:var(--f2,1)}
-.flame:nth-child(3){opacity:var(--f3,1)}
-@keyframes flicker{from{transform:scale(1,1) rotate(-3deg)}to{transform:scale(.88,1.12) rotate(3deg)}}
-#cake.out .flame{animation:none;opacity:0;transform:scale(.2)}
-.smoke circle{opacity:0}
-#cake.out .smoke circle,#cake.s1 .smoke circle:nth-child(1),#cake.s2 .smoke circle:nth-child(2),#cake.s3 .smoke circle:nth-child(3){animation:smoke 1.8s ease-out forwards}
-#cake.out .smoke circle:nth-child(2){animation-delay:.15s}
-#cake.out .smoke circle:nth-child(3){animation-delay:.3s}
-@keyframes smoke{0%{opacity:.8;transform:translateY(0)}100%{opacity:0;transform:translateY(-40px) scale(2.4)}}
+  filter:saturate(calc(1 - var(--wp,0)*1.1)) sepia(calc(var(--wp,0)*.55)) brightness(calc(1 - var(--wp,0)*.5)) drop-shadow(0 20px 18px color-mix(in srgb,var(--sh,#e8799f) 30%,transparent))}
 
 /* ---------- Floaters ---------- */
 .heart{position:absolute;bottom:-30px;color:var(--c,var(--pink));font-size:var(--sz);opacity:0;animation:up var(--d) linear forwards}
@@ -373,9 +344,9 @@ body::after{content:"";position:fixed;inset:0;z-index:49;pointer-events:none;opa
 @media (max-width:600px){.gallery::after{width:calc(var(--r)*2.09);height:calc(var(--r)*.62)}.stage{width:calc(var(--r)*2.55)}}
 
 /* ---------- Small screens & tablets ---------- */
-@media (max-width:380px){.btn{min-width:112px;padding:0 18px;font-size:1rem}.btns{gap:10px}}
+@media (max-width:380px){.btn{min-width:112px;padding:0 18px;font-size:1rem}}
 @media (min-width:900px){.card{padding:60px}}
-@media (max-height:520px) and (orientation:landscape){.screen{min-height:auto;padding-top:40px;padding-bottom:40px}.ask{margin-top:18px}}
+@media (max-height:520px) and (orientation:landscape){.screen{min-height:auto;padding-top:40px;padding-bottom:40px}}
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion:reduce){
@@ -385,3 +356,81 @@ body::after{content:"";position:fixed;inset:0;z-index:49;pointer-events:none;opa
   .finale.in .dead-rose{animation:none}
   .note .w{filter:none;transform:none}
 }
+/* ---------- Cinematic 6-second loader (bloom → fading → withering → last light) ---------- */
+@property --lrp{syntax:"<color>";inherits:true;initial-value:#f48fb1}
+@property --lrp2{syntax:"<color>";inherits:true;initial-value:#e0577f}
+@property --lrl{syntax:"<color>";inherits:true;initial-value:#c23a6a}
+@property --lrs{syntax:"<color>";inherits:true;initial-value:#5f9a6a}
+@property --ltx{syntax:"<color>";inherits:true;initial-value:#8a5568}
+html.ld-lock,html.ld-lock body{overflow:hidden}
+#loader{position:fixed;inset:0;z-index:100;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none;
+  --rp:var(--lrp);--rp2:var(--lrp2);--rl:var(--lrl);--rs:var(--lrs);
+  background:radial-gradient(ellipse at 50% 30%,#fff3f7,#fde4ec 55%,#f9c9da);
+  transition:opacity 2s ease,visibility 0s linear 2s}
+#loader.done{opacity:0;visibility:hidden;pointer-events:none}
+#loader::before,#loader::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0}
+#loader::before{background:radial-gradient(ellipse at 50% 45%,#3a2217,#120a07 78%)}
+#loader::after{z-index:4;background:radial-gradient(ellipse at center,transparent 40%,rgba(8,3,1,.85)),
+  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .6 0 0 0 0 .5 0 0 0 0 .4 0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+#loader>*{position:relative;z-index:2}
+.ld-glow{position:absolute!important;z-index:1!important;left:50%;bottom:-8%;width:80vmax;height:50vmax;transform:translateX(-50%);opacity:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 100%,rgba(230,190,120,.42),transparent 62%)}
+#ldPetals,#ldMotes{position:absolute!important;inset:0;z-index:3!important;pointer-events:none}
+.ld-roses{display:flex;align-items:flex-end;gap:clamp(8px,3vw,22px)}
+.ld-roses svg{width:clamp(56px,15vw,100px);height:auto;aspect-ratio:100/130;transform-origin:50% 100%;overflow:visible;filter:drop-shadow(0 8px 10px rgba(120,40,60,.28))}
+.ld-roses svg.s{width:clamp(40px,10vw,70px)}
+.ld-p{position:absolute;top:0;left:0;width:var(--s);height:calc(var(--s)*1.3);border-radius:100% 0 100% 0;background:var(--lrp);opacity:0;box-shadow:inset -2px -3px 5px rgba(0,0,0,.15)}
+.ld-m{position:absolute;bottom:-2vh;left:var(--x);width:var(--s);height:var(--s);border-radius:50%;background:#fff;opacity:0;box-shadow:0 0 8px 2px rgba(255,255,255,.9),0 0 12px 3px rgba(255,143,181,.5)}
+.ld-text{position:relative;width:min(90vw,26ch);height:2em;margin-top:clamp(26px,6vh,46px);text-align:center;font-family:var(--serif);font-style:italic;font-size:clamp(1.15rem,4.4vw,1.5rem);color:var(--ltx)}
+.ld-text span{position:absolute;inset:0;opacity:0}
+.ld-bar{width:min(46vw,200px);height:2px;margin-top:20px;border-radius:2px;overflow:hidden;opacity:0;background:color-mix(in srgb,var(--ltx) 22%,transparent)}
+.ld-bar i{display:block;height:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--ltx)}
+#loader.run{animation:ldTone 18s linear forwards}
+#loader.run::before{animation:ldDark 18s linear forwards}
+#loader.run::after{animation:ldGrain 18s linear forwards}
+#loader.run .ld-glow{animation:ldGlow 18s linear forwards}
+#loader.run .ld-roses svg{animation:ldDroop 18s ease-in-out forwards}
+#loader.run .ld-p{animation:ldFall var(--d) ease-in var(--dl) both}
+#loader.run .ld-m{animation:ldMote var(--d) ease-out var(--dl) both}
+#loader.run .ld-text span{animation:ldTxt 3.5s ease both}
+#loader.run .ld-text span:nth-child(1){animation-delay:1s}
+#loader.run .ld-text span:nth-child(2){animation-delay:5s}
+#loader.run .ld-text span:nth-child(3){animation-delay:9.5s}
+#loader.run .ld-bar{animation:ldIn 1s ease .6s forwards}
+#loader.run .ld-bar i{animation:ldBar 18s linear forwards}
+@keyframes ldIn{to{opacity:1}}
+@keyframes ldBar{to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){#loader{transition-duration:.4s!important}}
+
+@keyframes ldTone{0%,22%{--lrp:#f48fb1;--lrp2:#e0577f;--lrl:#c23a6a;--lrs:#5f9a6a;--ltx:#8a5568}
+  38%{--lrp:#c88a9c;--lrp2:#a65f78;--lrl:#7a3f55;--lrs:#6f8a55;--ltx:#8a6070}
+  52%{--lrp:#b27a72;--lrp2:#8a5048;--lrl:#5f2e2c;--lrs:#8c7a42;--ltx:#a88a7c}
+  68%{--lrp:#7a5340;--lrp2:#5a3428;--lrl:#3b211a;--lrs:#6a4a28;--ltx:#c4ab90}
+  86%{--lrp:#4b2124;--lrp2:#34171a;--lrl:#210f10;--lrs:#3d2c1a;--ltx:#d3bf9f}
+  100%{--lrp:#2a1414;--lrp2:#1f0e0e;--lrl:#150909;--lrs:#2a2016;--ltx:#cdbb9f}}
+@keyframes ldDark{0%,16%{opacity:0}40%{opacity:.18}60%{opacity:.5}80%{opacity:.85}100%{opacity:1}}
+@keyframes ldPaper{0%,28%{opacity:0}100%{opacity:.9}}
+@keyframes ldGrain{0%,10%{opacity:0}100%{opacity:.9}}
+@keyframes ldGlow{0%,78%{opacity:0}100%{opacity:.8}}
+@keyframes ldDroop{0%,18%{transform:none}50%{transform:rotate(calc(var(--dr,10deg)*.4))}80%{transform:rotate(calc(var(--dr,10deg)*.85))}100%{transform:rotate(var(--dr,10deg)) scale(.95)}}
+@keyframes ldFall{0%{opacity:0;transform:translate(0,-8vh) rotate(0)}15%{opacity:.85}100%{opacity:.5;transform:translate(var(--dx),108vh) rotate(var(--r))}}
+@keyframes ldMote{0%{opacity:0;transform:translateY(0)}20%{opacity:.8}100%{opacity:0;transform:translateY(-70vh)}}
+@keyframes ldSettle{to{opacity:.75}}
+@keyframes ldTxt{0%{opacity:0;transform:translateY(6px)}20%,80%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-4px)}}
+.ld-paper{position:absolute!important;inset:0;z-index:1!important;opacity:0;pointer-events:none;
+  background:radial-gradient(circle at 18% 24%,rgba(120,70,35,.38),transparent 22%),radial-gradient(circle at 82% 70%,rgba(90,45,25,.42),transparent 26%),radial-gradient(circle at 62% 12%,rgba(110,60,30,.28),transparent 18%)}
+#ldGround{position:absolute!important;inset:0;z-index:3!important;pointer-events:none}
+.ld-s{position:absolute;bottom:var(--b);left:var(--x);width:var(--s);height:calc(var(--s)*1.3);border-radius:100% 0 100% 0;background:var(--lrp);opacity:0;transform:rotate(var(--r))}
+.ld-p.leaf,.ld-s.leaf{background:var(--lrs);border-radius:0 100% 0 100%}
+#loader.run::after{animation-name:ldGrain}
+#loader.run .ld-paper{animation:ldPaper 18s linear forwards}
+#loader.run .ld-s{animation:ldSettle 2.5s ease var(--dl) forwards}
+#loader.run .ld-text span:nth-child(4){animation-delay:14s}
+/* the page itself: warm lighting + stains that follow the scroll (behind all content) */
+body::before{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;opacity:var(--paper,0);
+  background:radial-gradient(ellipse at 50% 15%,rgba(176,120,80,.38),rgba(70,30,20,.55)),
+  radial-gradient(circle at 14% 32%,rgba(110,60,30,.4),transparent 22%),radial-gradient(circle at 86% 74%,rgba(90,45,25,.45),transparent 26%)}
+/* the cake: already abandoned */
+.cake-dried{opacity:calc(var(--paper,0)*.9)}
+.cake-cracks{opacity:var(--crk,0)}
+.cake-crumbs{opacity:calc(.3 + var(--crk,0)*.7)}
