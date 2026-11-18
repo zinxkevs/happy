@@ -10,7 +10,71 @@
 <body>
 <div class="bg" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i></div>
 <div id="floaters" aria-hidden="true"></div>
+<div id="petals" aria-hidden="true"></div>
+<div id="dust" aria-hidden="true"></div>
+<div id="curtain" aria-hidden="true"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
+
+<!-- ===== shared SVG art: living rose, dried rose, and the "worn ink" filter ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="rough" x="-4%" y="-8%" width="108%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="2" seed="4" result="n"/>
+      <feDisplacementMap id="roughMap" in="SourceGraphic" in2="n" scale="0"/>
+    </filter>
+  </defs>
+
+  <!-- a rose whose colours follow the withering palette (--rp --rp2 --rl --rs) -->
+  <symbol id="rose" viewBox="0 0 100 130">
+    <path d="M50 70C47 92 53 110 50 128" fill="none" stroke="var(--rs)" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M50 100C36 94 27 99 23 108C36 113 46 109 50 100z" fill="var(--rs)"/>
+    <path d="M51 112C64 105 73 109 77 118C64 123 54 121 51 112z" fill="var(--rs)"/>
+    <g transform="translate(50 46)" stroke="var(--rl)" stroke-width="1" stroke-linejoin="round">
+      <g fill="var(--rp)">
+        <ellipse cy="-12" rx="19" ry="25"/>
+        <ellipse cy="-12" rx="19" ry="25" transform="rotate(72)"/>
+        <ellipse cy="-12" rx="19" ry="25" transform="rotate(144)"/>
+        <ellipse cy="-12" rx="19" ry="25" transform="rotate(216)"/>
+        <ellipse cy="-12" rx="19" ry="25" transform="rotate(288)"/>
+      </g>
+      <g fill="var(--rp2)">
+        <ellipse cy="-7" rx="13" ry="18" transform="rotate(36)"/>
+        <ellipse cy="-7" rx="13" ry="18" transform="rotate(108)"/>
+        <ellipse cy="-7" rx="13" ry="18" transform="rotate(180)"/>
+        <ellipse cy="-7" rx="13" ry="18" transform="rotate(252)"/>
+        <ellipse cy="-7" rx="13" ry="18" transform="rotate(324)"/>
+      </g>
+      <path d="M0 -4c-7 0-9-8-3-10 6-2 11 3 8 9-2 4-8 5-11 1" fill="none" stroke="var(--rl)" stroke-width="1.6" stroke-linecap="round"/>
+    </g>
+  </symbol>
+
+  <!-- a single dried rose: bowed head, curled petals, bare stem, dead leaves, fallen petals -->
+  <symbol id="rose-dead" viewBox="0 0 160 270">
+    <path d="M86 266C82 222 94 180 76 132" fill="none" stroke="#2b2016" stroke-width="5" stroke-linecap="round"/>
+    <path d="M84 232l12-8-4 12zM80 196l-12-6 3 12z" fill="#2b2016"/>
+    <path d="M85 214c16-12 34-10 42 2-14 10-32 10-42-2z" fill="#2c2317" stroke="#4a3a24" stroke-width="1"/>
+    <path d="M82 178c-16-10-34-8-42 4 14 10 32 8 42-4z" fill="#291f14" stroke="#46361f" stroke-width="1"/>
+    <path d="M118 226c6 6 10 12 8 20" fill="none" stroke="#3d2e1b" stroke-width="1.5"/>
+    <g transform="rotate(-27 76 128)">
+      <path d="M76 130c-34-6-50-38-34-62 9-13 24-17 34-10 10-7 25-3 34 10 16 24 0 56-34 62z" fill="#2a1111" stroke="#5a2420" stroke-width="1.4"/>
+      <path d="M76 118c-21-4-30-24-19-38 7-7 14-7 19-2 5-5 12-5 19 2 11 14 2 34-19 38z" fill="#3b1816" stroke="#6b2c25" stroke-width="1.2"/>
+      <path d="M76 104c-10 0-14-10-6-14 7-3 16 3 12 11" fill="none" stroke="#7a3830" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M43 82c-12-4-18 8-10 17M109 80c13-3 18 9 9 18M60 68c-6-10 4-18 12-12M92 66c8-8 18 0 12 12" fill="none" stroke="#7a3830" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M52 118c10 6 20 8 30 6" fill="none" stroke="#1a0a09" stroke-width="1.5" opacity=".7"/>
+    </g>
+    <path d="M18 252c10-9 24-8 29 1-9 9-23 9-29-1z" fill="#2c1313" stroke="#5a2420" stroke-width="1"/>
+    <path d="M118 258c8-8 22-7 26 2-9 8-22 8-26-2z" fill="#331616" stroke="#5a2420" stroke-width="1"/>
+    <path d="M62 262c6-6 16-5 19 2-7 6-16 6-19-2z" fill="#261010" stroke="#4d1e1b" stroke-width="1"/>
+    <path d="M130 238c4-6 12-6 14 0-5 5-12 5-14 0z" fill="#2c2317" stroke="#4a3a24" stroke-width="1"/>
+  </symbol>
+
+  <!-- padlock used on locked buttons -->
+  <symbol id="padlock" viewBox="0 0 24 24">
+    <path class="shackle" d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <rect x="5" y="10" width="14" height="11" rx="2" fill="currentColor"/>
+    <circle cx="12" cy="15.5" r="1.6" fill="#120a05"/>
+  </symbol>
+</svg>
 
 <!-- 1. THE QUESTION -->
 <section id="intro" class="screen">
@@ -27,14 +91,38 @@
   </div>
 </section>
 
-<!-- 2. THE CELEBRATION -->
+<!-- 2. THE CELEBRATION (slowly becomes an abandoned garden) -->
 <main id="party" hidden>
+  <!-- the rose that follows you down the page and loses its petals -->
+  <svg id="lifeRose" class="life-rose" viewBox="0 0 120 200" aria-hidden="true" focusable="false">
+    <g id="lrHead">
+      <path class="lr-stem" d="M60 196C58 150 62 110 60 70" fill="none" stroke-width="4" stroke-linecap="round"/>
+      <path class="lr-leaf" d="M60 150C42 142 30 148 26 160C42 164 56 160 60 150z"/>
+      <path class="lr-leaf" d="M61 128C78 120 90 124 94 136C78 140 64 136 61 128z"/>
+      <g id="lrBloom" transform="translate(60 56)">
+        <g class="lpw"><ellipse class="lp" cy="-16" rx="19" ry="26"/></g>
+        <g class="lpw"><ellipse class="lp" cy="-16" rx="19" ry="26" transform="rotate(60)"/></g>
+        <g class="lpw"><ellipse class="lp" cy="-16" rx="19" ry="26" transform="rotate(120)"/></g>
+        <g class="lpw"><ellipse class="lp" cy="-16" rx="19" ry="26" transform="rotate(180)"/></g>
+        <g class="lpw"><ellipse class="lp" cy="-16" rx="19" ry="26" transform="rotate(240)"/></g>
+        <g class="lpw"><ellipse class="lp" cy="-16" rx="19" ry="26" transform="rotate(300)"/></g>
+        <g class="lp-in"><ellipse cy="-9" rx="14" ry="19" transform="rotate(30)"/><ellipse cy="-9" rx="14" ry="19" transform="rotate(150)"/><ellipse cy="-9" rx="14" ry="19" transform="rotate(270)"/></g>
+        <path class="lp-sp" d="M0 -5c-8 0-10-9-3-11 7-2 12 3 9 10-2 4-9 6-12 1" fill="none" stroke-width="1.7" stroke-linecap="round"/>
+      </g>
+    </g>
+  </svg>
+
   <header class="screen hero">
-    <p class="eyebrow rise" style="--i:0">a little something, just for you</p>
-    <h1 class="big rise" style="--i:1">Happy Birthday, Happy! 🎂</h1>
-    <p class="name rise" style="--i:2">Happy Mae Carpio</p>
-    <p class="sub rise" style="--i:3">Today is all about you. You deserve all the happiness in the world.</p>
-    <a class="scroll-btn rise" style="--i:4" href="#message"><span>Click me to scroll down</span><b aria-hidden="true">↓</b></a>
+    <div class="hero-roses rise" style="--i:0" aria-hidden="true">
+      <svg class="hero-rose s"><use href="#rose"/></svg>
+      <svg class="hero-rose"><use href="#rose"/></svg>
+      <svg class="hero-rose s"><use href="#rose"/></svg>
+    </div>
+    <p class="eyebrow rise" style="--i:1">a little something, just for you</p>
+    <h1 class="big rise" style="--i:2">Happy Birthday, Happy! 🎂</h1>
+    <p class="name rise" style="--i:3">Happy Mae Carpio</p>
+    <p class="sub rise" style="--i:4">Today is all about you. You deserve all the happiness in the world.</p>
+    <a class="scroll-btn rise" style="--i:5" href="#message"><span>Click me to scroll down</span><b aria-hidden="true">↓</b></a>
   </header>
 
   <section id="message" class="block">
@@ -47,7 +135,7 @@
     </article>
   </section>
 
-  <section class="block center reveal">
+  <section id="giftSec" class="block center reveal">
     <h3 class="kicker">Open your surprise</h3>
     <span id="giftHint" class="clickme" aria-hidden="true">Click me!<b>↓</b></span>
     <button id="gift" class="gift" type="button" aria-label="Open your surprise" aria-expanded="false">
@@ -57,7 +145,7 @@
     <p id="giftMsg" class="pop" aria-live="polite">Surprise! You deserve something beautiful today. 💝</p>
   </section>
 
-  <section class="block center reveal">
+  <section id="wishSec" class="block center reveal">
     <h3 class="kicker">Make a wish</h3>
     <svg id="cake" viewBox="0 0 240 250" role="img" aria-label="Birthday cake with three candles">
       <ellipse cx="120" cy="228" rx="106" ry="12" fill="#e6cfa8"/>
@@ -87,31 +175,65 @@
     <p class="sign">We wishes you a wonderful birthday.</p>
   </footer>
 
-  <!-- 3. FINAL SURPRISE: SOUNDTRACK -->
+  <!-- APPRECIATION -->
+  <section id="note1" class="block center letter reveal">
+    <svg class="rose-ico" aria-hidden="true"><use href="#rose"/></svg>
+    <article class="note" style="--tilt:-.5deg">
+      <p>By the way, I just want to say thank you. Thank you for being a good friend and for being part of the little moments that became memories.</p>
+    </article>
+  </section>
+
+  <section id="note2" class="block center letter reveal">
+    <article class="note" style="--tilt:.6deg">
+      <p>Maybe we don't always get to say these things, but I genuinely appreciate the friendship, the laughs, the random conversations, and all those simple moments.</p>
+    </article>
+  </section>
+
+  <!-- an old music player that no longer plays (no audio is loaded anywhere on this page) -->
   <section id="music" class="block center reveal">
-    <h3 class="kicker">Your birthday soundtrack</h3>
-    <div id="player" class="player" aria-label="Music player">
-      <audio id="audio" preload="metadata" src="assets/aphrodite.mp3"></audio>
-      <div id="vinyl" class="vinyl" aria-hidden="true"><img class="vinyl-logo" src="assets/logo.jpg" alt="" draggable="false" onerror="this.style.display='none'"><span></span></div>
+    <h3 class="kicker">Side A</h3>
+    <div id="player" class="player" role="group" aria-label="An old, broken music player">
+      <div class="deck" aria-hidden="true">
+        <div class="vinyl"><img class="vinyl-logo" src="assets/logo.jpg" alt="" draggable="false" onerror="this.style.display='none'"><span></span></div>
+        <i class="arm"></i>
+      </div>
       <div class="p-body">
-        <div class="meta"><strong id="trackTitle">Aphrodite</strong><span id="trackArtist">The Ridleys</span></div>
+        <div class="meta"><strong>Untitled</strong><span>Side A</span></div>
         <div class="p-row">
-          <button id="playBtn" class="play" type="button" aria-label="Play">
+          <button id="playBtn" class="play" type="button" aria-label="Play (this player no longer works)" aria-disabled="true">
             <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.500v13a1 1 0 0 0 1.500.9l10.500-6.500a1 1 0 0 0 0-1.700L9.500 4.600A1 1 0 0 0 8 5.500z" fill="currentColor"/></svg>
-            <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4.500" height="14" rx="1.500" fill="currentColor"/><rect x="13.500" y="5" width="4.500" height="14" rx="1.500" fill="currentColor"/></svg>
+            <svg class="i-lock" viewBox="0 0 24 24" aria-hidden="true"><use href="#padlock"/></svg>
           </button>
-          <div class="timeline">
-            <input id="seek" type="range" min="0" max="100" step="0.1" value="0" aria-label="Seek">
-            <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
+          <div class="timeline" aria-hidden="true">
+            <div class="trk"><i></i></div>
+            <div class="times"><span>0:00</span><span>–:––</span></div>
           </div>
         </div>
-        <label class="vol"><span aria-hidden="true">🔈</span><input id="vol" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volume"></label>
       </div>
-      <p id="musicNote" class="music-note" role="status" hidden>Your birthday soundtrack is waiting for its music. 💗</p>
+      <p id="musicNote" class="music-note" role="status" hidden>It doesn't play anymore.</p>
     </div>
   </section>
 
-  <!-- 4. 3D PHOTO CAROUSEL (turns while the music plays) -->
+  <section id="note3" class="block center letter reveal">
+    <svg class="rose-ico" aria-hidden="true"><use href="#rose"/></svg>
+    <article class="note" style="--tilt:-.4deg">
+      <p>I'm not sure if you realize it, but some people make ordinary days a little more memorable. And I'm grateful that I got to know you.</p>
+    </article>
+  </section>
+
+  <section id="note4" class="block center letter reveal">
+    <article class="note" style="--tilt:.5deg">
+      <p>I may not remember every little detail, but I'll always appreciate the memories we shared. Those moments will always have a place in my memories.</p>
+    </article>
+  </section>
+
+  <section id="note5" class="block center letter reveal">
+    <article class="note" style="--tilt:-.3deg">
+      <p>The funny thing about ordinary days is that you never know which ones you'll keep. Looking back, a lot of the ones I keep have you somewhere in them.</p>
+    </article>
+  </section>
+
+  <!-- 4. 3D PHOTO CAROUSEL (turns slowly; ages as you scroll) -->
   <section id="memories" class="block center reveal">
     <h3 class="kicker">A Few Moments of You ♡</h3>
     <p class="sub gal-sub">More memories to come Happy.</p>
@@ -130,9 +252,24 @@
       <button id="galNext" type="button" aria-label="Next photo">›</button>
     </div>
   </section>
-</main>
 
-<a id="musicInvite" class="invite" href="#music" hidden>There's a little soundtrack waiting for you. 🎧</a>
+  <section id="note6" class="block center letter reveal">
+    <article class="note" style="--tilt:.4deg">
+      <p>Some moments can't be recreated, and I think that's exactly what makes them worth holding onto. I'm glad I was there for the ones I was.</p>
+    </article>
+  </section>
+
+  <!-- THE FINAL SECTION: one dried rose, a few quiet lines -->
+  <section id="thanks" class="finale reveal">
+    <svg class="dead-rose" viewBox="0 0 160 270" role="img" aria-label="A single dried rose"><use href="#rose-dead"/></svg>
+    <div class="final-note">
+      <p class="fl" style="--dl:1.6s">Thank you for being you, Happy.</p>
+      <p class="fl" style="--dl:4.6s">I hope life continues to bring you beautiful things, good people, and countless reasons to smile.</p>
+      <p class="fl" style="--dl:8.2s">I'm genuinely grateful for our friendship.</p>
+      <p class="fl fin-mark" style="--dl:11.4s" aria-hidden="true">♡</p>
+    </div>
+  </section>
+</main>
 
 <script src="script.js"></script>
 </body>
