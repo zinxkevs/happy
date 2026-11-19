@@ -434,6 +434,7 @@
     const age = A ? clamp((y - s0) / (vh * .9)) : 0;
     const fin = A ? clamp((y + vh - A.thTop) / (vh * .9)) : 0;
 
+    root.style.setProperty('--py', Math.round(y));
     if (Math.abs(p - lastP) > .0008 || Math.abs(age - lastAge) > .002 || Math.abs(fin - lastFin) > .002) {
       lastP = p; lastAge = age; lastFin = fin; wp = p;
       const st = root.style;
