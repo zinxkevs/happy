@@ -434,3 +434,36 @@ body::before{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;opa
 .cake-dried{opacity:calc(var(--paper,0)*.9)}
 .cake-cracks{opacity:var(--crk,0)}
 .cake-crumbs{opacity:calc(.3 + var(--crk,0)*.7)}
+
+/* =====================================================================
+   THE ENDING — stages of a friendship (all driven by the scroll variables)
+   ===================================================================== */
+/* cracks creep in from the edges of the screen once things have changed */
+#cracks{position:fixed;inset:0;width:100%;height:100%;z-index:44;pointer-events:none;opacity:calc(1 - var(--fin,0)*.85)}
+#cracks path{fill:none;stroke:#1a0d09;stroke-opacity:.5;stroke-width:1.1;stroke-linejoin:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;
+  stroke-dashoffset:calc(1 - clamp(0, (var(--wp,0) - var(--t,.5))*3.2, 1))}
+/* colour grading: warmth drains from everything, pinks settle into muted browns */
+#grade{position:fixed;inset:0;z-index:45;pointer-events:none;background:#7a5a48;mix-blend-mode:color;opacity:calc(var(--paper,0)*.6)}
+/* debris drifts at its own pace (parallax) and the room empties before the end */
+#scatter{transform:translateY(calc(var(--py,0)*.06px));opacity:calc(1 - var(--fin,0)*.85)}
+#petals{opacity:calc(1 - var(--fin,0))}
+#dust{opacity:calc(var(--dust,0)*(1 - var(--fin,0)*.7))}
+#curtain{opacity:calc(var(--fin,0)*.62)}
+/* the further along, the slower things arrive */
+section.reveal,footer.reveal{transition-duration:calc(.9s + var(--wp,0)*1.8s)}
+.card.reveal,.card.reveal p{transition-duration:calc(.8s + var(--wp,0)*1.4s)}
+.note .w{transition-duration:calc(.9s + var(--wp,0)*1.5s)}
+/* photographs: edges wear away and tear as they age */
+.photo{clip-path:polygon(calc(var(--age,0)*2%) calc(var(--age,0)*1.5%),38% calc(var(--age,0)*.9%),64% calc(var(--age,0)*.3%),calc(100% - var(--age,0)*1.8%) calc(var(--age,0)*2%),calc(100% - var(--age,0)*.6%) 46%,calc(100% - var(--age,0)*2.2%) calc(100% - var(--age,0)*1.4%),58% calc(100% - var(--age,0)*.4%),30% calc(100% - var(--age,0)*1.1%),calc(var(--age,0)*1.6%) calc(100% - var(--age,0)*2%),calc(var(--age,0)*.7%) 56%)}
+/* the last light: a small antique-gold glow that slowly dims, then a faded photograph, then the sentences fade one by one */
+.finale::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 22%,rgba(200,160,90,.2),transparent 30%)}
+.finale.in::after{animation:lastLight 18s ease-out forwards}
+@keyframes lastLight{0%{opacity:0}12%{opacity:1}100%{opacity:.1}}
+.finale.in .fl:nth-child(2){opacity:.8}
+.finale.in .fl:nth-child(3){opacity:.66}
+.finale.in .fl.fin-mark{opacity:.45}
+.fl{letter-spacing:.015em}
+.ghost-photo{width:clamp(120px,32vw,190px);aspect-ratio:3/2;margin-top:clamp(30px,7vh,56px);opacity:0;transition:opacity 5s ease 13.5s;
+  -webkit-mask:radial-gradient(ellipse at center,#000 30%,transparent 72%);mask:radial-gradient(ellipse at center,#000 30%,transparent 72%)}
+.ghost-photo img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(.85) sepia(.5) brightness(.42) contrast(.75) blur(1.6px)}
+.finale.in .ghost-photo{opacity:.5}
