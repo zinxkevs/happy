@@ -1,0 +1,101 @@
+/* =====================================================================
+   THE LOSS OF THE PHOTOGRAPHS — append to the END of style.css
+   Per-photo --d (0..1) and global --g (0..1) are written by gallery-decay.js
+   ===================================================================== */
+
+/* the gallery is pinned while it decays; scrolling IS the destruction */
+#memories{display:block;height:max(360dvh,2200px);padding:0}
+.pin{position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pin .kicker,.pin .gal-sub{opacity:clamp(0,calc(1 - (var(--g,0) - .6)*3),1)}
+
+/* frame: border yellows and darkens, outline tears, shadow shrinks until the photo floats nowhere */
+.photo{--e:calc(var(--d,0)*1%);
+  border-color:color-mix(in srgb,#fff calc((1 - var(--d,0))*96%),#7d6a4c);
+  box-shadow:0 calc(26px*(1 - var(--d,0))) calc(40px*(1 - var(--d,0)*.7)) calc(-18px*(1 - var(--d,0))) rgba(91,42,63,calc(.45*(1 - var(--d,0)))),
+             0 6px 14px -6px rgba(20,8,4,calc(.25*(1 - var(--d,0))));
+  clip-path:polygon(calc(var(--e)*6) calc(var(--e)*4),38% calc(var(--e)*3),64% calc(var(--e)*1),calc(100% - var(--e)*5) calc(var(--e)*6),calc(100% - var(--e)*2) 46%,
+    calc(100% - var(--e)*7) calc(100% - var(--e)*5),58% calc(100% - var(--e)*1),30% calc(100% - var(--e)*3.5),calc(var(--e)*5) calc(100% - var(--e)*7),calc(var(--e)*2) 56%)}
+
+/* colour drains, image softens and darkens (clean again when --d is 0) */
+.photo img{transform:scale(calc(1 + var(--d,0)*.06));
+  filter:saturate(max(0,calc(1 - var(--d,0)*1.05))) sepia(calc(var(--d,0)*.75)) contrast(calc(1 - var(--d,0)*.25)) brightness(calc(1 - var(--d,0)*.55)) blur(calc(var(--d,0)*var(--d,0)*5px))}
+.photo::before{opacity:clamp(0,calc(1 - var(--d,0)*1.6),1)}
+
+/* stains, burns, patches of faded paper (positions differ per photo) */
+.photo::after{opacity:clamp(0,min(calc(var(--d,0)*2.2),calc((1 - var(--d,0))*8)),1);
+  background:
+   radial-gradient(circle at var(--x1,20%) var(--y1,30%),rgba(35,14,4,.85),transparent 24%),
+   radial-gradient(circle at var(--x3,70%) var(--y3,72%),rgba(60,28,10,.8),transparent 30%),
+   radial-gradient(ellipse at var(--x2,62%) var(--y2,24%),rgba(196,172,128,.95) 0 13%,transparent 33%),
+   radial-gradient(ellipse at center,transparent 38%,rgba(60,28,10,.75)),
+   url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3 0 0 0 0 .2 0 0 0 0 .1 0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+   linear-gradient(rgba(170,115,60,.2),rgba(170,115,60,.2))}
+
+/* organic cracks, drawn in progressively (generated per photo by the script) */
+.crk{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;overflow:visible;
+  filter:drop-shadow(1px 1px 0 rgba(240,225,195,.45));opacity:clamp(0,calc((1 - var(--d,0))*6),1)}
+.crk path{fill:none;stroke:#140a06;stroke-opacity:.8;stroke-width:1.3;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+  stroke-dasharray:1;stroke-dashoffset:calc(1 - clamp(0,(var(--d,0) - var(--t,.1))*3.2,1))}
+
+/* flakes that lift away, tumble and fall, each at its own moment */
+.shard{position:absolute;inset:0;z-index:4;pointer-events:none;background-size:cover;background-position:center;border-radius:16px;
+  --u:clamp(0,calc((var(--d,0) - var(--st,.3))*2.4),1);
+  transform:translate(calc(var(--sx)*var(--u)),calc(var(--sy)*var(--u)*var(--u))) rotate(calc(var(--sr)*var(--u)));
+  opacity:calc(clamp(0,calc(var(--u)*40),1)*(1 - var(--u)));
+  filter:saturate(max(0,calc(1 - var(--d,0)*1.05))) sepia(calc(var(--d,0)*.75)) brightness(calc(1 - var(--d,0)*.55)) drop-shadow(0 4px 5px rgba(0,0,0,.5))}
+.card3d.gone .photo,.card3d.gone .shard{visibility:hidden}
+
+/* the carousel's world dies with its photographs */
+.stage,.gallery::after{opacity:clamp(0,calc(1 - (var(--g,0) - .55)*2.6),1)}
+.gallery::before{opacity:calc((1 - var(--wp,0))*clamp(0,calc(1 - (var(--g,0) - .55)*2.6),1))}
+.gal-nav button{opacity:calc(1 - var(--g,0)*.8);rotate:calc(var(--g,0)*9deg);filter:sepia(var(--g,0)) brightness(calc(1 - var(--g,0)*.5))}
+
+/* the emptiness: nothing moves, nothing glows */
+.gallery.void .mote{display:none}
+.gallery.void .stage,.gallery.void .stage::after{animation-play-state:paused!important}
+.gallery.void + .gal-nav{visibility:hidden}
+#curtain{opacity:max(calc(var(--fin,0)*.62),calc(var(--g,0)*.4))}
+/* the last blurred photo in the finale would contradict "nothing remains" */
+.ghost-photo{display:none}
+
+@media (prefers-reduced-motion:reduce){.shard{display:none}}
+
+/* =====================================================================
+   FINAL RUIN — harsher environment, cake collapse, frozen carousel, empty finale
+   ===================================================================== */
+/* cold, filthy light: warm browns drain to a blue-grey cast */
+#grade{background:color-mix(in srgb,#4f5d6c calc(var(--wp,0)*100%),#7a5a48);opacity:calc(var(--paper,0)*.9)}
+/* stains, water damage and scratches settle over the whole room (static image; only opacity moves) */
+#ruin{position:fixed;inset:0;z-index:46;pointer-events:none;opacity:clamp(0,calc((var(--wp,0) - .18)*1.5),.92);
+  background:
+   url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><g stroke='%23d8cdbb' stroke-opacity='.22' fill='none'><path d='M40 0L52 300'/><path d='M180 20L170 260'/><path d='M0 120L300 132' stroke-opacity='.1'/><path d='M250 0L262 180'/></g></svg>") 0 0/300px 300px,
+   url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='s' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='.006 .009' numOctaves='3' seed='9'/><feColorMatrix values='0 0 0 0 .14 0 0 0 0 .09 0 0 0 0 .06 0 0 0 9 -4.5'/></filter><rect width='100%' height='100%' filter='url(%23s)'/></svg>") 0 0/70vmax 70vmax}
+
+/* cake: sags, melts, goes out */
+#cake{transform-origin:50% 94%;transform:rotate(calc(var(--wp,0)*-4deg)) scaleY(calc(1 - var(--wp,0)*.16))}
+#cake .wick{fill:#0d0705;opacity:clamp(0,calc((var(--wp,0) - .12)*8),1)}
+#cake .smoke{fill:none;stroke:#cfc8c0;stroke-width:1.6;stroke-linecap:round;opacity:clamp(0,calc(1 - (var(--wp,0) - .35)*(var(--wp,0) - .35)*14),1)}
+#cake .drip{fill:#e8ddcc;transform-box:fill-box;transform-origin:50% 0;transform:scaleY(clamp(0,calc((var(--wp,0) - .25)*4),1))}
+#cake .puddle{fill:#4a2f22;transform-box:fill-box;transform-origin:50% 50%;transform:scaleX(clamp(0,calc((var(--wp,0) - .3)*2.4),1));opacity:.85}
+
+/* carousel: once it destabilises it creaks to a halt (script.js keeps running underneath) */
+.ring.frozen{transform:translateZ(calc(var(--r)*-1)) rotateY(calc(var(--fv,0)*1deg))!important}
+
+/* the finale: almost nothing left — a cold shaft of light, one dead flower, scraps on the floor */
+.finale{background:radial-gradient(ellipse at 50% 30%,rgba(70,80,95,.16),transparent 62%)}
+.finale::after{background:radial-gradient(circle at 50% 22%,rgba(150,165,185,.16),transparent 30%)}
+.finale::before{content:"";position:absolute;left:50%;top:0;width:min(130vw,560px);height:100%;transform:translateX(-50%);pointer-events:none;
+  background:linear-gradient(180deg,rgba(150,165,185,.13),transparent 60%);clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);opacity:0;transition:opacity 5s ease}
+.finale.in::before{opacity:1}
+.dead-rose{width:clamp(110px,28vw,170px);filter:drop-shadow(0 18px 24px #000) saturate(.5) brightness(.8)}
+.fl{color:#a79d90;text-shadow:0 0 22px #000}
+.frag{position:absolute;z-index:1;pointer-events:none;opacity:0;transition:opacity 4s ease var(--fd,2s);
+  background:linear-gradient(160deg,#3a2e26,#120b08);filter:drop-shadow(0 2px 3px #000)}
+.finale.in .frag{opacity:.85}
+
+@media (max-width:600px){
+  #memories{height:max(330dvh,1900px)}
+  .pin .kicker{margin-bottom:12px}
+  .shard:nth-of-type(3){display:none}
+}
+@media (prefers-reduced-motion:reduce){#cake .smoke{display:none}}
