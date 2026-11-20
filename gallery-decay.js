@@ -65,7 +65,7 @@
   function decay() {
     dRaf = 0;
     const r = memEl.getBoundingClientRect(), vh = innerHeight, run = Math.max(1, r.height - vh);
-    const g = clamp((-r.top - vh * .2) / Math.max(1, run - vh * .2));
+    let g = clamp((-r.top - vh * .2) / Math.max(1, run - vh * .2)); if (root.classList.contains("sealed")) g = 1;
     if (lastG >= 0 && Math.abs(g - lastG) < .0005) return;
     lastG = g; root.style.setProperty('--g', g.toFixed(4));
     cards.forEach((c, i) => {
@@ -124,4 +124,57 @@
   }
   const q = () => { if (!raf) raf = requestAnimationFrame(frame); };
   addEventListener('scroll', q, { passive: true }); addEventListener('resize', q); q();
+})();
+
+/* SEAL — once the visitor reaches the finale, the ruin is permanent: scrolling up never restores colour */
+(() => {
+  'use strict';
+  const root = document.documentElement, st = root.style, $ = (s) => document.querySelector(s);
+  let sealed = false;
+  const KEEP = { '--py': 1, '--g': 1 }, UP = { '--fin': 1, '--vig': 1, '--age': 1 }, DOWN = { '--fr': 1 }, best = {}, set0 = st.setProperty.bind(st);
+
+  /* every colour / decay variable stops updating; the few position-based ones only ever get worse */
+  st.setProperty = function (n, v, p) {
+    if (n in UP || n in DOWN) {
+      const f = parseFloat(v), b = best[n];
+      best[n] = b === undefined ? f : (n in UP ? Math.max(b, f) : Math.min(b, f));
+      if (sealed) v = best[n];
+      if (n === '--fin' && f >= .9 && !sealed) requestAnimationFrame(seal);
+    } else if (sealed && !(n in KEEP)) return;
+    return set0(n, v, p);
+  };
+
+  const freeze = (el, names) => names.forEach((m) => { const o = el[m].bind(el); el[m] = (...a) => (sealed ? undefined : o(...a)); });
+  const rm = $('#roughMap'); if (rm) freeze(rm, ['setAttribute']);
+  const lr = $('#lrHead'); if (lr) freeze(lr, ['setAttribute', 'removeAttribute']);
+  document.querySelectorAll('#lifeRose .lpw').forEach((g) => freeze(g, ['setAttribute', 'removeAttribute']));
+  const tm = $('meta[name="theme-color"]'), dsc = Object.getOwnPropertyDescriptor(HTMLMetaElement.prototype, 'content');
+  if (tm && dsc) Object.defineProperty(tm, 'content', { get() { return dsc.get.call(tm); }, set(v) { if (!sealed) dsc.set.call(tm, v); }, configurable: true });
+
+  const wish = $('#wish'), wishMsg = $('#wishMsg'), gift = $('#gift'), giftMsg = $('#giftMsg');
+  const wt = wish.classList.toggle.bind(wish.classList), wsa = wish.setAttribute.bind(wish);
+  wish.classList.toggle = (c, f) => (sealed && c === 'locked' ? wt(c, true) : wt(c, f));
+  wish.setAttribute = (a, v) => (sealed && a === 'aria-disabled' ? wsa(a, 'true') : wsa(a, v));
+  wish.addEventListener('click', (e) => {            // capture phase: runs before the original handler
+    if (!sealed) return;
+    e.stopImmediatePropagation();
+    wish.classList.remove('shake'); void wish.offsetWidth; wish.classList.add('shake');
+    wishMsg.textContent = 'The candles have already gone out.'; wishMsg.classList.add('show');
+  }, true);
+  gift.addEventListener('click', (e) => {
+    if (!sealed) return;
+    e.stopImmediatePropagation();
+    gift.classList.add('open'); gift.setAttribute('aria-expanded', 'true');
+    const h = $('#giftHint'); if (h) h.classList.add('gone');
+    giftMsg.textContent = 'Some things fade. This is still for you. 🥀'; giftMsg.classList.add('show');
+  }, true);
+
+  function seal() {
+    if (sealed) return;
+    sealed = true; root.classList.add('sealed');
+    const cl = root.classList, t0 = cl.toggle.bind(cl);
+    cl.toggle = (c, f) => (c === 'decayed' ? t0(c, true) : t0(c, f));
+    t0('decayed', true); wt('locked', true); wsa('aria-disabled', 'true');
+    dispatchEvent(new Event('scroll'));               // let the gallery lock its final state too
+  }
 })();

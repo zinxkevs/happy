@@ -99,3 +99,7 @@
   .shard:nth-of-type(3){display:none}
 }
 @media (prefers-reduced-motion:reduce){#cake .smoke{display:none}}
+
+/* sealed: nothing living comes back */
+html.sealed .sc{opacity:.8}
+html.sealed #fx{display:none}
